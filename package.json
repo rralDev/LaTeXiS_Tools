@@ -16,6 +16,10 @@
       {
         "command": "latexis.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "latexis.insertFigure",
+        "title": "LaTeXiS: Insertar figura"
       }
     ]
   },

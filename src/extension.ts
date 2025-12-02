@@ -19,7 +19,76 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage('Hello World from LaTeXiS!');
 	});
 
+    // Register Insert Figure command
+    let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async () => {
+
+        const opciones = [
+            "Insertar figura completa (entorno figure)",
+            "Insertar solo \\includegraphics",
+            "Insertar figura alineada a la derecha (wrapfigure)",
+            "Insertar figura alineada a la izquierda (wrapfigure)"
+        ];
+
+        const seleccion = await vscode.window.showQuickPick(opciones, {
+            placeHolder: "Selecciona el tipo de figura que deseas insertar"
+        });
+
+        if (!seleccion) {
+            return; // Usuario canceló
+        }
+
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showErrorMessage("No hay un editor activo.");
+            return;
+        }
+
+        let snippet = "";
+
+        switch (seleccion) {
+            case opciones[0]:
+                snippet =
+`\\begin{figure}[hbtp]
+    \\centering
+    \\includegraphics[width=0.8\\textwidth]{}
+    \\caption{}
+    \\label{fig:}
+\\end{figure}
+`;
+                break;
+
+            case opciones[1]:
+                snippet = "\\includegraphics[width=0.8\\textwidth]{}";
+                break;
+
+            case opciones[2]:
+                snippet =
+`\\begin{wrapfigure}{r}{0.4\\textwidth}
+    \\centering
+    \\includegraphics[width=0.95\\linewidth]{}
+    \\caption{}
+    \\label{fig:}
+\\end{wrapfigure}
+`;
+                break;
+
+            case opciones[3]:
+                snippet =
+`\\begin{wrapfigure}{l}{0.4\\textwidth}
+    \\centering
+    \\includegraphics[width=0.95\\linewidth]{}
+    \\caption{}
+    \\label{fig:}
+\\end{wrapfigure}
+`;
+                break;
+        }
+
+        editor.insertSnippet(new vscode.SnippetString(snippet));
+    });
+
 	context.subscriptions.push(disposable);
+	context.subscriptions.push(insertFigure);
 }
 
 // This method is called when your extension is deactivated
