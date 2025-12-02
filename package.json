@@ -20,6 +20,10 @@
       {
         "command": "latexis.insertFigure",
         "title": "LaTeXiS: Insertar figura"
+      },
+      {
+        "command": "latexis.insertEquation",
+        "title": "LaTeXiS: Insertar ecuación"
       }
     ]
   },

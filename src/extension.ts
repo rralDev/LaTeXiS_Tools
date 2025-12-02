@@ -87,7 +87,84 @@ export function activate(context: vscode.ExtensionContext) {
         editor.insertSnippet(new vscode.SnippetString(snippet));
     });
 
+    // Register Insert Equation command
+    let insertEquation = vscode.commands.registerCommand('latexis.insertEquation', async () => {
+
+        const opcionesEcuacion = [
+            "Ecuación numerada (equation)",
+            "Ecuación sin número (\\[  \\])",
+            "Ecuación alineada (align)",
+            "Ecuación alineada sin número (align*)",
+            "Ecuaciones multilínea (split)"
+        ];
+
+        const seleccionEq = await vscode.window.showQuickPick(opcionesEcuacion, {
+            placeHolder: "Selecciona el tipo de ecuación que deseas insertar"
+        });
+
+        if (!seleccionEq) {
+            return; // Usuario canceló
+        }
+
+        const editorEq = vscode.window.activeTextEditor;
+        if (!editorEq) {
+            vscode.window.showErrorMessage("No hay un editor activo.");
+            return;
+        }
+
+        let snippetEq = "";
+
+        switch (seleccionEq) {
+            case opcionesEcuacion[0]:
+                snippetEq =
+`\\begin{equation}
+    {}
+    \\label{eq:}
+\\end{equation}
+`;
+                break;
+
+            case opcionesEcuacion[1]:
+                snippetEq =
+`\\[
+    {}
+\\]
+`;
+                break;
+
+            case opcionesEcuacion[2]:
+                snippetEq =
+`\\begin{align}
+    {} &= {} \\\\
+\\end{align}
+`;
+                break;
+
+            case opcionesEcuacion[3]:
+                snippetEq =
+`\\begin{align*}
+    {} &= {} \\\\
+\\end{align*}
+`;
+                break;
+
+            case opcionesEcuacion[4]:
+                snippetEq =
+`\\begin{equation}
+    \\begin{split}
+        {} &= {} \\\\
+    \\end{split}
+    \\label{eq:}
+\\end{equation}
+`;
+                break;
+        }
+
+        editorEq.insertSnippet(new vscode.SnippetString(snippetEq));
+    });
+
 	context.subscriptions.push(disposable);
+	context.subscriptions.push(insertEquation);
 	context.subscriptions.push(insertFigure);
 }
 
