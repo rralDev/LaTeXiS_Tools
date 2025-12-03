@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { ensurePackage } from './utils/packages';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -47,6 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         switch (seleccion) {
             case opciones[0]:
+                await ensurePackage(editor.document, "graphicx");
                 snippet =
 `\\begin{figure}[hbtp]
     \\centering
@@ -58,10 +60,13 @@ export function activate(context: vscode.ExtensionContext) {
                 break;
 
             case opciones[1]:
+                await ensurePackage(editor.document, "graphicx");
                 snippet = "\\includegraphics[width=0.8\\textwidth]{}";
                 break;
 
             case opciones[2]:
+                await ensurePackage(editor.document, "wrapfig");
+                await ensurePackage(editor.document, "graphicx");
                 snippet =
 `\\begin{wrapfigure}{r}{0.4\\textwidth}
     \\centering
@@ -73,6 +78,8 @@ export function activate(context: vscode.ExtensionContext) {
                 break;
 
             case opciones[3]:
+                await ensurePackage(editor.document, "wrapfig");
+                await ensurePackage(editor.document, "graphicx");
                 snippet =
 `\\begin{wrapfigure}{l}{0.4\\textwidth}
     \\centering
@@ -133,6 +140,7 @@ export function activate(context: vscode.ExtensionContext) {
                 break;
 
             case opcionesEcuacion[2]:
+                await ensurePackage(editorEq.document, "amsmath");
                 snippetEq =
 `\\begin{align}
     {} &= {} \\\\
@@ -141,6 +149,7 @@ export function activate(context: vscode.ExtensionContext) {
                 break;
 
             case opcionesEcuacion[3]:
+                await ensurePackage(editorEq.document, "amsmath");
                 snippetEq =
 `\\begin{align*}
     {} &= {} \\\\
@@ -149,6 +158,7 @@ export function activate(context: vscode.ExtensionContext) {
                 break;
 
             case opcionesEcuacion[4]:
+                await ensurePackage(editorEq.document, "amsmath");
                 snippetEq =
 `\\begin{equation}
     \\begin{split}
@@ -163,6 +173,50 @@ export function activate(context: vscode.ExtensionContext) {
         editorEq.insertSnippet(new vscode.SnippetString(snippetEq));
     });
 
+    // Register Scan Document command
+    let scanDocument = vscode.commands.registerCommand('latexis.scanDocument', async () => {
+
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showErrorMessage("No hay un editor activo.");
+            return;
+        }
+
+        const document = editor.document;
+        const text = document.getText();
+
+        // Paquetes detectados
+        const addedPackages: string[] = [];
+
+        // Detect graphicx
+        if (text.includes("\\includegraphics")) {
+            await ensurePackage(document, "graphicx");
+            addedPackages.push("graphicx");
+        }
+
+        // Detect wrapfig
+        if (text.includes("wrapfigure")) {
+            await ensurePackage(document, "wrapfig");
+            if (!addedPackages.includes("graphicx")) {
+                await ensurePackage(document, "graphicx");
+            }
+            addedPackages.push("wrapfig");
+        }
+
+        // Detect amsmath usage
+        if (text.includes("\\begin{align") || text.includes("\\begin{split")) {
+            await ensurePackage(document, "amsmath");
+            addedPackages.push("amsmath");
+        }
+
+        if (addedPackages.length === 0) {
+            vscode.window.showInformationMessage("No se detectaron paquetes faltantes.");
+        } else {
+            vscode.window.showInformationMessage("Paquetes añadidos: " + addedPackages.join(", "));
+        }
+    });
+
+    context.subscriptions.push(scanDocument);
 	context.subscriptions.push(disposable);
 	context.subscriptions.push(insertEquation);
 	context.subscriptions.push(insertFigure);

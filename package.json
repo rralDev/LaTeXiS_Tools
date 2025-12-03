@@ -24,7 +24,10 @@
       {
         "command": "latexis.insertEquation",
         "title": "LaTeXiS: Insertar ecuación"
-      }
+      },
+      {
+        "command": "latexis.scanDocument",
+        "title": "LaTeXiS: Analizar documento y añadir paquetes faltantes"}
     ]
   },
   "scripts": {
