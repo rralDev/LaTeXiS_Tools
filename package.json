@@ -27,7 +27,8 @@
       },
       {
         "command": "latexis.scanDocument",
-        "title": "LaTeXiS: Analizar documento y añadir paquetes faltantes"}
+        "title": "LaTeXiS: Analizar documento y añadir paquetes faltantes"
+      }
     ]
   },
   "scripts": {

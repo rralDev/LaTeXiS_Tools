@@ -3,6 +3,44 @@
 import * as vscode from 'vscode';
 import { ensurePackage } from './utils/packages';
 
+async function findMainTexDocument(activeDocument: vscode.TextDocument): Promise<vscode.TextDocument> {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    // 1) Check user setting latexis.mainFile if present
+    const config = vscode.workspace.getConfiguration('latexis');
+    const mainFileSetting = config.get<string>('mainFile');
+
+    if (mainFileSetting && workspaceFolders && workspaceFolders.length > 0) {
+        const root = workspaceFolders[0].uri;
+        const mainUri = vscode.Uri.joinPath(root, mainFileSetting);
+        try {
+            return await vscode.workspace.openTextDocument(mainUri);
+        } catch {
+            // fall through to other strategies
+        }
+    }
+
+    // 2) If active document has a documentclass, assume it is main
+    const activeText = activeDocument.getText();
+    if (activeText.includes('\\documentclass')) {
+        return activeDocument;
+    }
+
+    // 3) Search for any .tex file with a documentclass
+    if (workspaceFolders && workspaceFolders.length > 0) {
+        const texFiles = await vscode.workspace.findFiles('**/*.tex');
+        for (const uri of texFiles) {
+            const doc = await vscode.workspace.openTextDocument(uri);
+            const text = doc.getText();
+            if (text.includes('\\documentclass')) {
+                return doc;
+            }
+        }
+    }
+
+    // Fallback: use active document
+    return activeDocument;
+}
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -182,37 +220,73 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        const document = editor.document;
-        const text = document.getText();
+        const activeDocument = editor.document;
+        const activeText = activeDocument.getText();
+        const workspaceFolders = vscode.workspace.workspaceFolders;
 
-        // Paquetes detectados
+        // === VALIDACIÓN 1: SIN WORKSPACE (archivo suelto) ===
+        if (!workspaceFolders) {
+            if (!activeText.includes("\\documentclass")) {
+                vscode.window.showWarningMessage(
+                    "Este archivo no contiene \\documentclass. Abre la carpeta de tu proyecto para analizar múltiples archivos."
+                );
+                return;
+            }
+            // Caso especial: archivo único con documentclass → continuar normalmente
+        }
+
+        // === VALIDACIÓN 2: CON WORKSPACE → buscar archivo principal ===
+        let mainDocument = await findMainTexDocument(activeDocument);
+        const mainText = mainDocument.getText();
+
+        if (workspaceFolders && !mainText.includes("\\documentclass")) {
+            vscode.window.showWarningMessage(
+                "No se encontró archivo principal con \\documentclass en este proyecto. Asegúrate de abrir la carpeta correcta."
+            );
+            return;
+        }
+
+        let allText = activeDocument.getText();
+
+        // If we have a workspace, concatenate all .tex files' contents
+        if (workspaceFolders && workspaceFolders.length > 0) {
+            const texFiles = await vscode.workspace.findFiles('**/*.tex');
+            for (const uri of texFiles) {
+                const doc = await vscode.workspace.openTextDocument(uri);
+                if (doc === activeDocument) {
+                    continue;
+                }
+                allText += '\n' + doc.getText();
+            }
+        }
+
         const addedPackages: string[] = [];
 
         // Detect graphicx
-        if (text.includes("\\includegraphics")) {
-            await ensurePackage(document, "graphicx");
-            addedPackages.push("graphicx");
+        if (allText.includes('\\includegraphics')) {
+            await ensurePackage(mainDocument, 'graphicx');
+            addedPackages.push('graphicx');
         }
 
         // Detect wrapfig
-        if (text.includes("wrapfigure")) {
-            await ensurePackage(document, "wrapfig");
-            if (!addedPackages.includes("graphicx")) {
-                await ensurePackage(document, "graphicx");
+        if (allText.includes('wrapfigure')) {
+            await ensurePackage(mainDocument, 'wrapfig');
+            if (!addedPackages.includes('graphicx')) {
+                await ensurePackage(mainDocument, 'graphicx');
             }
-            addedPackages.push("wrapfig");
+            addedPackages.push('wrapfig');
         }
 
         // Detect amsmath usage
-        if (text.includes("\\begin{align") || text.includes("\\begin{split")) {
-            await ensurePackage(document, "amsmath");
-            addedPackages.push("amsmath");
+        if (allText.includes('\\begin{align') || allText.includes('\\begin{split')) {
+            await ensurePackage(mainDocument, 'amsmath');
+            addedPackages.push('amsmath');
         }
 
         if (addedPackages.length === 0) {
-            vscode.window.showInformationMessage("No se detectaron paquetes faltantes.");
+            vscode.window.showInformationMessage('No se detectaron paquetes faltantes.');
         } else {
-            vscode.window.showInformationMessage("Paquetes añadidos: " + addedPackages.join(", "));
+            vscode.window.showInformationMessage('Paquetes añadidos al archivo principal: ' + addedPackages.join(', '));
         }
     });
 

@@ -2,18 +2,13 @@ import * as vscode from 'vscode';
 
 export async function ensurePackage(document: vscode.TextDocument, packageName: string) {
     const text = document.getText();
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-        return;
-    }
 
-    // Check if package already exists
-    const regex = new RegExp(`\\\\usepackage\\s*\\{${packageName}\\}`);
+    // Check if package already exists (allowing for options in brackets)
+    const regex = new RegExp(`\\\\usepackage\\s*(?:\\[[^\\]]*\\])?\\s*\\{${packageName}\\}`);
     if (regex.test(text)) {
         return;
     }
 
-    // Find documentclass line
     const lines = text.split('\n');
     let insertLine = 0;
 
@@ -24,7 +19,7 @@ export async function ensurePackage(document: vscode.TextDocument, packageName: 
         }
     }
 
-    await editor.edit(editBuilder => {
-        editBuilder.insert(new vscode.Position(insertLine, 0), `\\usepackage{${packageName}}\n`);
-    });
+    const edit = new vscode.WorkspaceEdit();
+    edit.insert(document.uri, new vscode.Position(insertLine, 0), `\\usepackage{${packageName}}\n`);
+    await vscode.workspace.applyEdit(edit);
 }
