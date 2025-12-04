@@ -1,71 +1,195 @@
-# latexis README
+# LaTeXiS — Intelligent LaTeX Assistant for Spanish-speaking Researchers
 
-This is the README for your extension "latexis". After writing up a brief description, we recommend including the following sections.
+LaTeXiS is a VS Code extension designed to make LaTeX easier, faster, and more intuitive—especially for **Spanish-speaking students, researchers, and thesis writers**.  
+Its mission is simple: **reduce the learning curve of LaTeX** by providing smart snippets, automatic package management, APA citation tools, and project‑aware assistance.
 
-## Features
-
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+Whether you are writing your **thesis**, a **scientific article**, or an **academic report**, LaTeXiS helps you focus on content while it takes care of structure, formatting, and boilerplate.
 
 ---
 
-## Following extension guidelines
+## ✨ Key Features
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+### 🔹 1. Intelligent Snippets (in Spanish)
+LaTeXiS provides context‑aware LaTeX snippets written **in Spanish**, making the environment more natural for new users.
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+Examples:
+- `Insertar figura` → Inserts a complete `figure` environment, `wrapfigure`, or `\includegraphics`.
+- `Insertar ecuación` → Inserts equation, align, align*, split, and more.
 
-## Working with Markdown
+All snippets automatically:
+- Detect the project’s **main .tex file**
+- Insert required **packages** in the correct place
+- Avoid polluting chapter files with preamble content
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+---
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+### 🔹 2. Automatic Package Detection (Project‑Wide)
+LaTeXiS scans the entire project to determine what packages your document really needs.
 
-## For more information
+It detects packages for:
+- **Figures** (graphicx, wrapfig)
+- **Tables** (booktabs, longtable, tabularx, array, xcolor, colortbl)
+- **Mathematics** (amsmath, amssymb, mathtools)
+- **References** (biblatex, hyperref, cleveref, natbib)
+- **Text tools** (csquotes, etc.)
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+Then it:
+- Inserts ONLY the missing packages
+- Prevents duplicates
+- Writes them **below the `\documentclass` section of the main file**
 
-**Enjoy!**
+This ensures a **clean, consistent preamble** across multi‑file projects.
+
+---
+
+### 🔹 3. APA Citation System (Fully Automated)
+LaTeXiS includes a fully automated **APA (7th edition)** setup using `biblatex` and `biber`.
+
+When you run:
+> **LaTeXiS: Insertar configuración APA**
+
+The extension:
+1. Inserts the complete APA configuration block  
+2. Detects conflicts with existing `biblatex` or `natbib` settings  
+3. Searches for existing `.bib` files in the project  
+4. Lets you choose one OR auto‑creates `bibliografia.bib`  
+5. Inserts:
+   - `\usepackage[backend=biber,style=apa]{biblatex}`
+   - `\DeclareLanguageMapping{spanish}{spanish-apa}`
+   - `\usepackage{csquotes}`
+   - `\addbibresource{...}`  
+6. Automatically inserts `\printbibliography` before `\end{document}`  
+7. Ensures all changes occur **only in the main .tex file**
+
+This makes bibliographies extremely easy for beginners.
+
+---
+
+### 🔹 4. Multi‑File Project Intelligence
+LaTeXiS understands entire LaTeX projects—not just single files.
+
+It automatically:
+- Finds the **main .tex file** (the one containing `\documentclass`)
+- Scans all `.tex` files in the workspace
+- Aggregates package requirements across chapters
+- Ensures all preamble modifications occur ONLY in the main file
+
+Ideal for theses where content is split across many chapters.
+
+---
+
+### 🔹 5. Spanish‑First Design (with Future Multilingual Support)
+LaTeXiS is built for **native Spanish-speaking LaTeX users**, offering:
+
+- Snippets written in Spanish  
+- Commands with Spanish names  
+- Documentation aligned to Latin‑American and Spanish academic standards  
+
+A future roadmap includes support for:
+- Portuguese  
+- French  
+- German  
+- English  
+
+With a system that allows per‑language snippet sets.
+
+---
+
+## 📸 Screenshots (Recommended to Add Later)
+You may want to include:
+- Snippet insertion examples  
+- APA configuration in action  
+- Package auto‑detection demonstration  
+- Multi‑file analysis panels  
+
+Place images inside the `/images` folder and reference them here.
+
+---
+
+## 🚀 Commands Overview
+
+| Command | Description |
+|--------|-------------|
+| **LaTeXiS: Insertar figura** | Inserts figure environments and adds required packages. |
+| **LaTeXiS: Insertar ecuación** | Inserts equations, align, align\*, split, or display math. |
+| **LaTeXiS: Analizar documento y añadir paquetes faltantes** | Scans the entire project and inserts only missing packages. |
+| **LaTeXiS: Insertar configuración APA** | Sets up APA, manages .bib files, and inserts bibliography printing. |
+| **Hello World** | Default test command (will be removed in future). |
+
+---
+
+## ⚙️ Requirements
+
+- **VS Code 1.76+**  
+- A working LaTeX distribution (TeX Live, MiKTeX, or MacTeX)  
+- For APA: **biber** must be installed  
+
+Optional:
+- Better BibTeX for Zotero (future integration planned)
+
+---
+
+## 🔧 Extension Settings
+
+LaTeXiS contributes:
+
+### `latexis.mainFile`
+Overrides autodetection of the main TeX document.
+
+Example:
+```json
+"latexis.mainFile": "tesis.tex"
+```
+
+More settings will be added as the extension matures.
+
+---
+
+## 🧩 Known Issues
+
+- Integration with Zotero is not yet available (planned for future version).  
+- Snippets APA for citations (`\textcite`, `\parencite`, etc.) will be added soon.  
+- No multilingual snippet sets yet (Spanish-only release).  
+
+---
+
+## 📈 Roadmap
+
+### ✔ Current (0.1.x)
+- Smart snippets  
+- Automatic package insertion  
+- APA automatic configuration  
+- Multi-file project analysis  
+- Creation of `.bib` file  
+
+### 🔜 Upcoming
+- Zotero auto‑export integration  
+- APA citation snippets  
+- Template generator for theses  
+- Language-specific snippet packs  
+- Marketplace publishing  
+
+### 🎯 Future
+- AI-based LaTeX code suggestions  
+- Document structuring assistant  
+- Template marketplace for universities  
+
+---
+
+## 👤 Author & Credits
+
+Developed by **Luis Robles**  
+Email: *albert.physik@gmail.com*  
+
+Created for students and researchers who want a **smoother transition into LaTeX**, particularly in the **Spanish-speaking academic community**.
+
+---
+
+## 📜 License
+
+MIT License (or your preferred license).
+
+---
+
+**Enjoy LaTeX with LaTeXiS!**  
+Empowering Spanish-speaking researchers, one document at a time.
