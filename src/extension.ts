@@ -86,8 +86,10 @@ export function activate(context: vscode.ExtensionContext) {
 
         switch (seleccion) {
             case opciones[0]:
-                await ensurePackage(editor.document, "graphicx");
-                snippet =
+                {
+                    const mainDoc = await findMainTexDocument(editor.document);
+                    await ensurePackage(mainDoc, "graphicx");
+                    snippet =
 `\\begin{figure}[hbtp]
     \\centering
     \\includegraphics[width=0.8\\textwidth]{}
@@ -95,17 +97,23 @@ export function activate(context: vscode.ExtensionContext) {
     \\label{fig:}
 \\end{figure}
 `;
+                }
                 break;
 
             case opciones[1]:
-                await ensurePackage(editor.document, "graphicx");
-                snippet = "\\includegraphics[width=0.8\\textwidth]{}";
+                {
+                    const mainDoc = await findMainTexDocument(editor.document);
+                    await ensurePackage(mainDoc, "graphicx");
+                    snippet = "\\includegraphics[width=0.8\\textwidth]{}";
+                }
                 break;
 
             case opciones[2]:
-                await ensurePackage(editor.document, "wrapfig");
-                await ensurePackage(editor.document, "graphicx");
-                snippet =
+                {
+                    const mainDoc = await findMainTexDocument(editor.document);
+                    await ensurePackage(mainDoc, "wrapfig");
+                    await ensurePackage(mainDoc, "graphicx");
+                    snippet =
 `\\begin{wrapfigure}{r}{0.4\\textwidth}
     \\centering
     \\includegraphics[width=0.95\\linewidth]{}
@@ -113,12 +121,15 @@ export function activate(context: vscode.ExtensionContext) {
     \\label{fig:}
 \\end{wrapfigure}
 `;
+                }
                 break;
 
             case opciones[3]:
-                await ensurePackage(editor.document, "wrapfig");
-                await ensurePackage(editor.document, "graphicx");
-                snippet =
+                {
+                    const mainDoc = await findMainTexDocument(editor.document);
+                    await ensurePackage(mainDoc, "wrapfig");
+                    await ensurePackage(mainDoc, "graphicx");
+                    snippet =
 `\\begin{wrapfigure}{l}{0.4\\textwidth}
     \\centering
     \\includegraphics[width=0.95\\linewidth]{}
@@ -126,6 +137,7 @@ export function activate(context: vscode.ExtensionContext) {
     \\label{fig:}
 \\end{wrapfigure}
 `;
+                }
                 break;
         }
 
@@ -178,26 +190,34 @@ export function activate(context: vscode.ExtensionContext) {
                 break;
 
             case opcionesEcuacion[2]:
-                await ensurePackage(editorEq.document, "amsmath");
-                snippetEq =
+                {
+                    const mainDoc = await findMainTexDocument(editorEq.document);
+                    await ensurePackage(mainDoc, "amsmath");
+                    snippetEq =
 `\\begin{align}
     {} &= {} \\\\
 \\end{align}
 `;
+                }
                 break;
 
             case opcionesEcuacion[3]:
-                await ensurePackage(editorEq.document, "amsmath");
-                snippetEq =
+                {
+                    const mainDoc = await findMainTexDocument(editorEq.document);
+                    await ensurePackage(mainDoc, "amsmath");
+                    snippetEq =
 `\\begin{align*}
     {} &= {} \\\\
 \\end{align*}
 `;
+                }
                 break;
 
             case opcionesEcuacion[4]:
-                await ensurePackage(editorEq.document, "amsmath");
-                snippetEq =
+                {
+                    const mainDoc = await findMainTexDocument(editorEq.document);
+                    await ensurePackage(mainDoc, "amsmath");
+                    snippetEq =
 `\\begin{equation}
     \\begin{split}
         {} &= {} \\\\
@@ -205,6 +225,7 @@ export function activate(context: vscode.ExtensionContext) {
     \\label{eq:}
 \\end{equation}
 `;
+                }
                 break;
         }
 
