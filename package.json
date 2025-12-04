@@ -4,6 +4,10 @@
   "icon": "images/icon.png",
   "description": "Advanced LaTeX extension that provides intelligent assistance, automatic package management, multilingual support, and thesis/project templates designed to improve the LaTeX writing workflow.",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rralDev/latexis.git"
+  },
   "engines": {
     "vscode": "^1.106.1"
   },
