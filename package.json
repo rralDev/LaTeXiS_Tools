@@ -1,6 +1,7 @@
 {
   "name": "latexis",
   "displayName": "LaTeXiS",
+  "icon": "images/icon.png",
   "description": "Advanced LaTeX extension that provides intelligent assistance, automatic package management, multilingual support, and thesis/project templates designed to improve the LaTeX writing workflow.",
   "version": "0.0.1",
   "engines": {
