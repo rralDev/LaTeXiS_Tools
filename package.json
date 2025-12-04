@@ -28,6 +28,10 @@
       {
         "command": "latexis.scanDocument",
         "title": "LaTeXiS: Analizar documento y añadir paquetes faltantes"
+      },
+      {       
+        "command": "latexis.insertAPAConfig",
+        "title": "LaTeXiS: Insertar configuración APA (biblatex + biber)"
       }
     ]
   },

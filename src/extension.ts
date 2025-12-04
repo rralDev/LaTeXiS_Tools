@@ -2,6 +2,13 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { ensurePackage } from './utils/packages';
+import {
+    detectFigurePackages,
+    detectTablePackages,
+    detectMathPackages,
+    detectReferencePackages,
+    detectTextPackages
+} from './detections';
 
 async function findMainTexDocument(activeDocument: vscode.TextDocument): Promise<vscode.TextDocument> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -45,18 +52,15 @@ async function findMainTexDocument(activeDocument: vscode.TextDocument): Promise
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "latexis" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('latexis.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from LaTeXiS!');
-	});
+    // ============================================================
+    // LaTeXiS Extension Activation
+    // Command registration is organized into clear functional groups:
+    //   1) Basic insertion commands (figures, equations)
+    //   2) Advanced insertion commands (APA config)
+    //   3) Analysis commands (scanDocument)
+    //
+    // Reordering improves readability; execution order is unaffected.
+    // ============================================================
 
     // Register Insert Figure command
     let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async () => {
@@ -232,6 +236,212 @@ export function activate(context: vscode.ExtensionContext) {
         editorEq.insertSnippet(new vscode.SnippetString(snippetEq));
     });
 
+    // ============================================================
+    // 2) Advanced Insertion Commands
+    // ============================================================
+
+    // APA configuration command: inserts a full BibLaTeX + biber APA setup
+    // into the main TeX document, detects existing .bib files, and avoids
+    // conflicts with natbib / existing biblatex configurations.
+    const insertAPAConfig = vscode.commands.registerCommand('latexis.insertAPAConfig', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showErrorMessage("No hay un editor activo.");
+            return;
+        }
+
+        // 1) Locate main TeX document (with \\documentclass)
+        const activeDoc = editor.document;
+        const mainDocument = await findMainTexDocument(activeDoc);
+        const mainText = mainDocument.getText();
+
+        // 2) Basic sanity checks: ensure this really looks like a main file
+        if (!mainText.includes("\\documentclass")) {
+            vscode.window.showWarningMessage(
+                "No se encontró \\documentclass en el archivo principal. Abre el archivo raíz de tu tesis antes de insertar la configuración APA."
+            );
+            return;
+        }
+
+        // 3) Detect existing biblatex usage
+        if (mainText.includes("biblatex")) {
+            vscode.window.showInformationMessage(
+                "Este archivo ya contiene una configuración con biblatex. Revisa manualmente si deseas adaptarla al estilo APA."
+            );
+            return;
+        }
+
+        // 4) Detect natbib to avoid conflicts
+        if (mainText.includes("natbib")) {
+            vscode.window.showWarningMessage(
+                "Se detectó natbib en el archivo principal. LaTeXiS no agregará biblatex para evitar conflictos. " +
+                "Elimina natbib manualmente si deseas usar biblatex con APA."
+            );
+            return;
+        }
+
+        // 5) Determine which .bib file to reference
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        let bibResource = "bibliografia.bib";
+        let shouldCreateBibFile = false;
+
+        if (workspaceFolders && workspaceFolders.length > 0) {
+            const bibFiles = await vscode.workspace.findFiles("**/*.bib");
+            if (bibFiles.length === 1) {
+                // Single .bib file found → reuse it
+                bibResource = vscode.workspace.asRelativePath(bibFiles[0], false);
+            } else if (bibFiles.length > 1) {
+                // Multiple .bib files → let the user choose one or create a new file
+                const options = bibFiles.map(uri => vscode.workspace.asRelativePath(uri, false));
+                const createNewLabel = "Crear nuevo bibliografia.bib";
+                options.unshift(createNewLabel);
+
+                const picked = await vscode.window.showQuickPick(options, {
+                    placeHolder: "Selecciona el archivo .bib para usar con APA o crea uno nuevo"
+                });
+
+                if (!picked) {
+                    // User cancelled
+                    return;
+                }
+
+                if (picked === createNewLabel) {
+                    shouldCreateBibFile = true;
+                    bibResource = "bibliografia.bib";
+                } else {
+                    bibResource = picked;
+                }
+            } else {
+                // No .bib files found → create a new one
+                shouldCreateBibFile = true;
+            }
+        } else {
+            // No workspace → default to local bibliografia.bib next to the main document
+            shouldCreateBibFile = true;
+        }
+
+        // 6) Insert APA configuration block after \\documentclass
+        const lines = mainText.split("\\n");
+        let insertLine = 0;
+
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].includes("\\documentclass")) {
+                insertLine = i + 1;
+                break;
+            }
+        }
+
+        const apaBlock =
+`% ============================
+%   Configuración APA (LaTeXiS)
+% ============================
+
+\\usepackage[backend=biber,style=apa]{biblatex}
+\\DeclareLanguageMapping{spanish}{spanish-apa}
+\\usepackage{csquotes}
+
+% Archivo(s) de bibliografía
+\\addbibresource{${bibResource}}
+
+`;
+
+        const edit = new vscode.WorkspaceEdit();
+        edit.insert(mainDocument.uri, new vscode.Position(insertLine, 0), apaBlock);
+        await vscode.workspace.applyEdit(edit);
+
+        // 8) Insert \printbibliography before \end{document} if not already present
+        // This step ensures the bibliography appears automatically in the final document output.
+        // It only runs if \printbibliography is not already present.
+        const refreshedText = mainDocument.getText();
+
+        // Only attempt insertion if not present
+        if (!refreshedText.includes("\\printbibliography")) {
+
+            // Find the final \end{document}
+            const endIndex = refreshedText.lastIndexOf("\\end{document}");
+            if (endIndex !== -1) {
+                const beforeEnd = refreshedText.substring(0, endIndex);
+                const afterEnd = refreshedText.substring(endIndex);
+
+                const newContent =
+`${beforeEnd}
+
+% ============================
+%   Bibliografía (LaTeXiS)
+% ============================
+\\printbibliography
+
+${afterEnd}`;
+
+                const fullEdit = new vscode.WorkspaceEdit();
+                fullEdit.replace(
+                    mainDocument.uri,
+                    new vscode.Range(0, 0, mainDocument.lineCount, 0),
+                    newContent
+                );
+
+                await vscode.workspace.applyEdit(fullEdit);
+            }
+        }
+
+        // 7) Optionally create bibliografia.bib (or chosen .bib) if required
+        if (shouldCreateBibFile) {
+            try {
+                let bibUri: vscode.Uri;
+
+                if (workspaceFolders && workspaceFolders.length > 0) {
+                    // Create the .bib file in the workspace root
+                    const root = workspaceFolders[0].uri;
+                    bibUri = vscode.Uri.joinPath(root, bibResource);
+                } else {
+                    // Create next to the main document
+                    const mainUri = mainDocument.uri;
+                    const mainDir = mainUri.with({ path: mainUri.path.replace(/[^/]+$/, "") });
+                    bibUri = vscode.Uri.joinPath(mainDir, bibResource);
+                }
+
+                // Check if file already exists
+                let exists = false;
+                try {
+                    await vscode.workspace.fs.stat(bibUri);
+                    exists = true;
+                } catch {
+                    exists = false;
+                }
+
+                if (!exists) {
+                    const encoder = new TextEncoder();
+                    const initialContent =
+`% Archivo de bibliografía creado por LaTeXiS
+% Añade aquí tus entradas BibLaTeX (formato .bib)
+
+`;
+                    await vscode.workspace.fs.writeFile(bibUri, encoder.encode(initialContent));
+                    vscode.window.showInformationMessage(
+                        `Configuración APA insertada. Se creó el archivo de bibliografía: ${bibResource}.`
+                    );
+                } else {
+                    vscode.window.showInformationMessage(
+                        `Configuración APA insertada. El archivo de bibliografía ${bibResource} ya existía y no se modificó.`
+                    );
+                }
+            } catch (error) {
+                vscode.window.showWarningMessage(
+                    "Se insertó la configuración APA, pero hubo un problema al crear el archivo .bib. " +
+                    "Crea el archivo de bibliografía manualmente si es necesario."
+                );
+            }
+        } else {
+            vscode.window.showInformationMessage(
+                `Configuración APA insertada usando el archivo de bibliografía existente: ${bibResource}.`
+            );
+        }
+    });
+
+    // ============================================================
+    // 3) Analysis Commands
+    // ============================================================
+
     // Register Scan Document command
     let scanDocument = vscode.commands.registerCommand('latexis.scanDocument', async () => {
 
@@ -281,40 +491,55 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
 
-        const addedPackages: string[] = [];
+        // New modular detection system
+        const detected = new Set<string>();
 
-        // Detect graphicx
-        if (allText.includes('\\includegraphics')) {
-            await ensurePackage(mainDocument, 'graphicx');
-            addedPackages.push('graphicx');
+        for (const detector of [
+            detectFigurePackages,
+            detectTablePackages,
+            detectMathPackages,
+            detectReferencePackages,
+            detectTextPackages
+        ]) {
+            const pkgs = detector(allText);
+            pkgs.forEach(pkg => detected.add(pkg));
         }
 
-        // Detect wrapfig
-        if (allText.includes('wrapfigure')) {
-            await ensurePackage(mainDocument, 'wrapfig');
-            if (!addedPackages.includes('graphicx')) {
-                await ensurePackage(mainDocument, 'graphicx');
+        // --- Improved package insertion: only report newly added packages ----
+        const mainTextNow = mainDocument.getText();
+        const newlyAdded: string[] = [];
+
+        for (const pkg of detected) {
+            const regex = new RegExp(`\\\\usepackage\\s*(?:\\[[^\\]]*\\])?\\s*\\{${pkg}\\}`);
+            if (!regex.test(mainTextNow)) {
+                await ensurePackage(mainDocument, pkg);
+                newlyAdded.push(pkg);
             }
-            addedPackages.push('wrapfig');
         }
 
-        // Detect amsmath usage
-        if (allText.includes('\\begin{align') || allText.includes('\\begin{split')) {
-            await ensurePackage(mainDocument, 'amsmath');
-            addedPackages.push('amsmath');
-        }
-
-        if (addedPackages.length === 0) {
-            vscode.window.showInformationMessage('No se detectaron paquetes faltantes.');
+        if (newlyAdded.length === 0) {
+            vscode.window.showInformationMessage("No se añadieron nuevos paquetes. Todo está completo.");
         } else {
-            vscode.window.showInformationMessage('Paquetes añadidos al archivo principal: ' + addedPackages.join(', '));
+            vscode.window.showInformationMessage(
+                "Nuevos paquetes añadidos al archivo principal: " + newlyAdded.join(", ")
+            );
         }
     });
 
+    // The command has been defined in the package.json file
+    // Now provide the implementation of the command with registerCommand
+    // The commandId parameter must match the command field in package.json
+    const disposable = vscode.commands.registerCommand('latexis.helloWorld', () => {
+        // The code you place here will be executed every time your command is executed
+        // Display a message box to the user
+        vscode.window.showInformationMessage('Hello World from LaTeXiS!');
+    });
+
+    context.subscriptions.push(insertFigure);
+    context.subscriptions.push(insertEquation);
+    context.subscriptions.push(insertAPAConfig);
     context.subscriptions.push(scanDocument);
-	context.subscriptions.push(disposable);
-	context.subscriptions.push(insertEquation);
-	context.subscriptions.push(insertFigure);
+    context.subscriptions.push(disposable);
 }
 
 // This method is called when your extension is deactivated
