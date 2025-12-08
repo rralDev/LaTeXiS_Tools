@@ -1,5 +1,4 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+// VS Code API imports
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { ensurePackage } from './utils/packages';
@@ -14,7 +13,7 @@ import {
 
 async function findMainTexDocument(activeDocument: vscode.TextDocument): Promise<vscode.TextDocument> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
-    // 1) Check user setting latexis.mainFile if present
+    // 1) Check user setting latexis.mainFile (if provided)
     const config = vscode.workspace.getConfiguration('latexis');
     const mainFileSetting = config.get<string>('mainFile');
 
@@ -28,13 +27,13 @@ async function findMainTexDocument(activeDocument: vscode.TextDocument): Promise
         }
     }
 
-    // 2) If active document has a documentclass, assume it is main
+    // 2) If the active document contains \documentclass, treat it as the main file
     const activeText = activeDocument.getText();
     if (/^\s*\\documentclass(?:\[[^\]]*\])?\{[^}]+\}/m.test(activeText)) {
         return activeDocument;
     }
 
-    // 3) Search for any .tex file with a documentclass
+    // 3) Search workspace for a .tex file containing \documentclass
     if (workspaceFolders && workspaceFolders.length > 0) {
         const texFiles = await vscode.workspace.findFiles('**/*.tex');
         for (const uri of texFiles) {
@@ -46,21 +45,21 @@ async function findMainTexDocument(activeDocument: vscode.TextDocument): Promise
         }
     }
 
-// Fallback: use active document
+// Fallback: return the active document
     return activeDocument;
 }
 
 async function ensureImageFolder(baseUri?: vscode.Uri): Promise<vscode.Uri | null> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
 
-    // Decide the logical "root" where image folders should live
+    // Determine the logical root directory for image folders
     let root: vscode.Uri | null = null;
 
     if (workspaceFolders && workspaceFolders.length > 0) {
-        // Workspace opened → use workspace root
+        // Workspace is open → use workspace root as base
         root = workspaceFolders[0].uri;
     } else if (baseUri) {
-        // No workspace → use the folder of the active document
+        // No workspace → use active file’s directory
         const dirPath = baseUri.with({ path: baseUri.path.replace(/[^/]+$/, "") });
         root = dirPath;
     } else {
@@ -85,14 +84,14 @@ async function ensureImageFolder(baseUri?: vscode.Uri): Promise<vscode.Uri | nul
         }
     }
 
-    // If no folder exists → create default img/ directory
+    // If no folder exists, create default img/ directory
     if (!foundFolder) {
         foundFolder = vscode.Uri.joinPath(root, "img");
         await vscode.workspace.fs.createDirectory(foundFolder);
         vscode.window.showInformationMessage("LaTeXiS: No se detectó carpeta de imágenes. Se creó 'img/'.");
     }
 
-    // Check whether the folder is empty
+    // Check if folder contains any image files
     let files: [string, vscode.FileType][] = [];
     try {
         files = await vscode.workspace.fs.readDirectory(foundFolder);
@@ -104,7 +103,7 @@ async function ensureImageFolder(baseUri?: vscode.Uri): Promise<vscode.Uri | nul
         name.match(/\.(png|jpg|jpeg|pdf|eps)$/i)
     );
 
-    // If no images exist in the folder, copy logo_latexis.png as a sample image
+    // If folder has no images, copy logo_latexis.png as example
     if (!hasImages) {
         try {
             const extension = vscode.extensions.getExtension("LuisRobles.latexis");
@@ -141,7 +140,7 @@ async function ensureImageFolder(baseUri?: vscode.Uri): Promise<vscode.Uri | nul
 async function checkFileIncludedInMain(currentDoc: vscode.TextDocument, mainDoc: vscode.TextDocument): Promise<void> {
     const mainText = mainDoc.getText();
 
-    // Build list of candidate relative paths
+    // Build list of relative-path candidates
     const rel = vscode.workspace.asRelativePath(currentDoc.uri, false)
         .replace(/\.tex$/i, "");
 
@@ -156,42 +155,31 @@ async function checkFileIncludedInMain(currentDoc: vscode.TextDocument, mainDoc:
     const patternsCommented = candidates.map(c => new RegExp(`^\\s*%.*\\\\(?:input|include)\\{${c}\\}`, "m"));
     const patternsCommentedWithTex = candidates.map(c => new RegExp(`^\\s*%.*\\\\(?:input|include)\\{${c}\\.tex\\}`, "m"));
 
-    // Check commented first
+    // Check if inclusion is commented out
     for (const p of [...patternsCommented, ...patternsCommentedWithTex]) {
         if (p.test(mainText)) {
             vscode.window.showWarningMessage(
-                "LaTeXiS: Este archivo está incluido en el archivo principal, porque está comentado. La figura podría no aparecer en el PDF final."
+                "LaTeXiS: La inclusión de este archivo, está comentado en el archivo principal. La figura podría no aparecer en el PDF final."
             );
             return;
         }
     }
 
-    // Check real inclusion
+    // Check actual inclusion
     for (const p of [...patternsIncluded, ...patternsIncludedWithTex]) {
         if (p.test(mainText)) {
             return; // OK
         }
     }
 
-    // If no match
+    // If no inclusion found
     vscode.window.showWarningMessage(
-        "LaTeXiS: Este archivo no parece estar incluido en el archivo principal. La figura podría no aparecer en el PDF final."
+        "LaTeXiS: Este archivo parece no estar incluido en el archivo principal. La figura podría no aparecer en el PDF final."
     );
 }
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+// LaTeXiS Extension Activation — Registers commands and initializes extension behavior
 export function activate(context: vscode.ExtensionContext) {
-
-    // ============================================================
-    // LaTeXiS Extension Activation
-    // Command registration is organized into clear functional groups:
-    //   1) Basic insertion commands (figures, equations)
-    //   2) Advanced insertion commands (APA config)
-    //   3) Analysis commands (scanDocument)
-    //
-    // Reordering improves readability; execution order is unaffected.
-    // ============================================================
 
     // ========================= INSERT FIGURE (A2‑C GOD MODE — FINAL) =========================
     // ========================= INSERT FIGURE (A2-C GOD MODE — MENU) =========================
@@ -204,10 +192,11 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
     }
 
     const activeText = editor.document.getText();
+    const activeHasDC = activeText.includes("\\documentclass");
     const workspaceFolders = vscode.workspace.workspaceFolders;
 
     // === Caso 1: archivo suelto SIN \documentclass ===
-    if (!workspaceFolders && !activeText.includes("\\documentclass")) {
+    if (!workspaceFolders && !activeHasDC) {
         vscode.window.showWarningMessage(
             "LaTeXiS: Este archivo no contiene \\documentclass. Abre el archivo principal o la carpeta del proyecto antes de insertar figuras."
         );
@@ -217,17 +206,22 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
     // Localizar archivo principal (main.tex o equivalente)
     const mainDoc = await findMainTexDocument(editor.document);
     const mainText = mainDoc.getText();
-    await checkFileIncludedInMain(editor.document, mainDoc);
+    const inProject = !!workspaceFolders;
+    const hasMain = mainText.includes("\\documentclass");
 
     // === Caso 2: proyecto SIN archivo principal válido ===
-    if (workspaceFolders && !mainText.includes("\\documentclass")) {
+    if (workspaceFolders && !hasMain) {
         vscode.window.showWarningMessage(
-            "LaTeXiS: No se encontró archivo principal con \\documentclass en este proyecto."
+            "LaTeXiS: No se encontró el archivo principal con \\documentclass en este proyecto."
         );
         return;
     }
+    // Solo verificar inclusión si hay proyecto, hay main y el archivo activo no es el main
+    if (inProject && hasMain && !activeHasDC) {
+        await checkFileIncludedInMain(editor.document, mainDoc);
+    }
 
-    // 0) Ask user which kind of figure snippet to insert
+    // Ask user which figure-snippet style to insert
     const opcionesFigura = [
         "Figura completa (entorno figure)",
         "Solo \\includegraphics",
@@ -240,18 +234,18 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
     });
 
     if (!seleccion) {
-        // User cancelled
+        // User canceled
         return;
     }
 
-    // 1) Ensure image folder exists (workspace root or alongside the current file)
+    // Ensure image folder exists (workspace root or local directory)
     const imageFolder = await ensureImageFolder(editor.document.uri);
     if (!imageFolder) {
         vscode.window.showWarningMessage("LaTeXiS: No se pudo preparar la carpeta de imágenes.");
         return;
     }
 
-    // 2) Compute clean relative path for includegraphics
+    // Compute clean relative path for \includegraphics
     let relativeImageFolder: string;
 
     if (workspaceFolders && workspaceFolders.length > 0) {
@@ -266,7 +260,7 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
         relativeImageFolder += "/";
     }
 
-    // 3) Choose default image (first existing or logo fallback)
+    // Determine default image (first found or logo fallback)
     const files = await vscode.workspace.fs.readDirectory(imageFolder);
     let defaultImage = "logo_latexis.png";
 
@@ -279,7 +273,7 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
     const defaultPath = `${relativeImageFolder}${defaultImage}`;
     const defaultImageNoExt = defaultImage.replace(/\.[^/.]+$/, "");
 
-    // 4) Build the snippet depending on the selected option
+    // Build snippet according to user's selection
     let snippet: vscode.SnippetString;
 
     // Insert required packages and update graphicspath in the main document
@@ -325,11 +319,11 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
         );
     }
 
-    // 5) Insert the chosen snippet
+    // Insert constructed snippet into editor
     editor.insertSnippet(snippet);
 });
 
-    // Register Insert Equation command
+    // Register the Insert Equation command
     let insertEquation = vscode.commands.registerCommand('latexis.insertEquation', async () => {
 
         const opcionesEcuacion = [
@@ -345,7 +339,7 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
         });
 
         if (!seleccionEq) {
-            return; // Usuario canceló
+            return; // User canceled
         }
 
         const editorEq = vscode.window.activeTextEditor;
@@ -636,7 +630,7 @@ ${afterEnd}`;
         const activeText = activeDocument.getText();
         const workspaceFolders = vscode.workspace.workspaceFolders;
 
-        // === VALIDACIÓN 1: SIN WORKSPACE (archivo suelto) ===
+        // === VALIDATION 1: NO WORKSPACE (standalone file) ===
         if (!workspaceFolders) {
             if (!activeText.includes("\\documentclass")) {
                 vscode.window.showWarningMessage(
@@ -644,16 +638,16 @@ ${afterEnd}`;
                 );
                 return;
             }
-            // Caso especial: archivo único con documentclass → continuar normalmente
+            // Special case: single-file with \documentclass → continue
         }
 
-        // === VALIDACIÓN 2: CON WORKSPACE → buscar archivo principal ===
+        // === VALIDATION 2: WORKSPACE MODE → locate main file ===
         let mainDocument = await findMainTexDocument(activeDocument);
         const mainText = mainDocument.getText();
 
         if (workspaceFolders && !mainText.includes("\\documentclass")) {
             vscode.window.showWarningMessage(
-                "No se encontró archivo principal con \\documentclass en este proyecto. Asegúrate de abrir la carpeta correcta."
+                "No se encontró el archivo principal con \\documentclass en este proyecto. Asegúrate de abrir la carpeta correcta."
             );
             return;
         }
@@ -707,12 +701,9 @@ ${afterEnd}`;
         }
     });
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with registerCommand
-    // The commandId parameter must match the command field in package.json
+    // Commands defined in package.json are registered here
+    // commandId must match the identifier declared in package.json
     const disposable = vscode.commands.registerCommand('latexis.helloWorld', () => {
-        // The code you place here will be executed every time your command is executed
-        // Display a message box to the user
         vscode.window.showInformationMessage('Hello World from LaTeXiS!');
     });
 
@@ -723,5 +714,4 @@ ${afterEnd}`;
     context.subscriptions.push(disposable);
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
