@@ -1,8 +1,10 @@
 // VS Code API imports
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { ensurePackage } from './utils/packages';
 import { ensureGraphicspath } from './utils/graphicsPath';
+import { pasteSimpleTable } from "./features/tableFromClipboard/pasteSimpleTable";
+import { insertExcelTable } from "./features/tableFromExcel/insertExcelTable";
+
 import {
     detectFigurePackages,
     detectTablePackages,
@@ -11,7 +13,7 @@ import {
     detectTextPackages
 } from './detections';
 
-async function findMainTexDocument(activeDocument: vscode.TextDocument): Promise<vscode.TextDocument> {
+export async function findMainTexDocument(activeDocument: vscode.TextDocument): Promise<vscode.TextDocument> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     // 1) Check user setting latexis.mainFile (if provided)
     const config = vscode.workspace.getConfiguration('latexis');
@@ -707,6 +709,27 @@ ${afterEnd}`;
         vscode.window.showInformationMessage('Hello World from LaTeXiS!');
     });
 
+// ------------------------------
+// TABLE COMMANDS (NEW SYSTEM)
+// ------------------------------
+    // Command: paste simple table (TSV from clipboard)
+    const cmdPasteSimple = vscode.commands.registerCommand(
+        "latexis.pasteSimpleTable",
+        async () => {
+            await pasteSimpleTable();
+        }
+    );
+
+    // Command: insert table from Excel file (xlsx)
+    const cmdInsertExcel = vscode.commands.registerCommand(
+        "latexis.insertExcelTable",
+        async () => {
+            await insertExcelTable();
+        }
+    );
+
+    context.subscriptions.push(cmdPasteSimple);
+    context.subscriptions.push(cmdInsertExcel);
     context.subscriptions.push(insertFigure);
     context.subscriptions.push(insertEquation);
     context.subscriptions.push(insertAPAConfig);

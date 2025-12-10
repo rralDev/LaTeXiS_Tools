@@ -42,7 +42,38 @@ This ensures a **clean, consistent preamble** across multi‑file projects.
 
 ---
 
-### 🔹 3. APA Citation System (Fully Automated)
+### 🔹 3. Smart Tables (Clipboard & Excel)
+LaTeXiS helps you move tables from spreadsheets into LaTeX with minimal friction:
+
+**Simple tables desde el portapapeles**
+- Usa el comando **«LaTeXiS: Pegar tabla simple»**.
+- Espera datos copiados desde Excel/Google Sheets como texto tabulado (TSV).
+- Inserta un entorno `table` + `tabular` limpio usando `booktabs`.
+- Coloca siempre el **caption encima de la tabla**.
+- Añade automáticamente el comentario:
+  `%% LaTeXiS: Tabla ingresada desde portapapeles`.
+- Inserta el paquete `booktabs` en el archivo principal si hace falta.
+
+**Tablas enriquecidas desde Excel (.xlsx)**
+- Usa el comando **«LaTeXiS: Insertar tabla desde archivo Excel»**.
+- Lee un archivo `.xlsx` con estilos usando `xlsx-js-style`.
+- Respeta **celdas combinadas** tanto horizontales como verticales mediante `\multicolumn` y `\multirow`.
+- Conserva la **alineación horizontal** básica de cada celda (izquierda, centrado, derecha).
+- Inserta automáticamente los paquetes necesarios para tablas complejas:
+  `booktabs`, `xcolor`, `colortbl`, `multirow`.
+- Escribe un encabezado de comentario:
+  ```tex
+  % LaTeXiS: Tabla ingresada desde Excel
+  % Origen: <ruta-al-archivo.xlsx>
+  ```
+  donde la ruta es relativa a la carpeta del proyecto cuando es posible.
+- Coloca siempre el **caption encima de la tabla**.
+
+_Limitación actual_: el formato tipográfico (negrita, cursiva, colores de texto/fondo) aún **no** se replica desde Excel; por ahora solo se respetan merges y alineación.
+
+---
+
+### 🔹 4. APA Citation System (Fully Automated)
 LaTeXiS includes a fully automated **APA (7th edition)** setup using `biblatex` and `biber`.
 
 When you run:
@@ -65,7 +96,7 @@ This makes bibliographies extremely easy for beginners.
 
 ---
 
-### 🔹 4. Multi‑File Project Intelligence
+### 🔹 5. Multi‑File Project Intelligence
 LaTeXiS understands entire LaTeX projects—not just single files.
 
 It automatically:
@@ -78,7 +109,7 @@ Ideal for theses where content is split across many chapters.
 
 ---
 
-### 🔹 5. Spanish‑First Design (with Future Multilingual Support)
+### 🔹 6. Spanish‑First Design (with Future Multilingual Support)
 LaTeXiS is built for **native Spanish-speaking LaTeX users**, offering:
 
 - Snippets written in Spanish  
@@ -112,6 +143,8 @@ Place images inside the `/images` folder and reference them here.
 |--------|-------------|
 | **LaTeXiS: Insertar figura** | Inserts figure environments and adds required packages. |
 | **LaTeXiS: Insertar ecuación** | Inserts equations, align, align\*, split, or display math. |
+| **LaTeXiS: Pegar tabla simple** | Pega una tabla copiada desde Excel/Sheets (TSV) e inserta `table` + `tabular` con `booktabs` y caption encima. |
+| **LaTeXiS: Insertar tabla desde archivo Excel** | Importa una tabla rica desde un archivo `.xlsx` (celdas combinadas y alineación) e inserta los paquetes de tabla necesarios. |
 | **LaTeXiS: Analizar documento y añadir paquetes faltantes** | Scans the entire project and inserts only missing packages. |
 | **LaTeXiS: Insertar configuración APA** | Sets up APA, manages .bib files, and inserts bibliography printing. |
 | **Hello World** | Default test command (will be removed in future). |
@@ -150,6 +183,10 @@ More settings will be added as the extension matures.
 - Integration with Zotero is not yet available (planned for future version).  
 - Snippets APA for citations (`\textcite`, `\parencite`, etc.) will be added soon.  
 - No multilingual snippet sets yet (Spanish-only release).  
+- Las herramientas de tablas (portapapeles y Excel) están en desarrollo activo; combinaciones muy complejas de merges pueden requerir ajustes manuales.
+- Las tablas ricas desde Excel aún **no** copian negritas, cursivas, subrayados ni colores de texto/fondo; solo merges y alineación básica.
+- La extensión todavía no ajusta automáticamente el ancho de las tablas ni las columnas; tablas muy anchas pueden salirse del margen si no se ajustan a mano.
+- El proyecto está en evolución constante: algunos cambios internos pueden romper funciones que antes funcionaban. Si notas comportamientos raros o errores, agradeceré muchísimo que los reportes mediante el repositorio (issues) o por contacto directo.
 
 ---
 
@@ -168,6 +205,8 @@ More settings will be added as the extension matures.
 - Template generator for theses  
 - Language-specific snippet packs  
 - Marketplace publishing  
+- Soporte completo de formato para tablas de Excel (negrita, cursiva, subrayado, colores de texto y de fondo).
+- Detección automática de tamaños de tabla y anchos de columna para evitar desbordes en la página.
 
 ### 🎯 Future
 - AI-based LaTeX code suggestions  
@@ -179,15 +218,18 @@ More settings will be added as the extension matures.
 ## 👤 Author & Credits
 
 Developed by **Luis Robles**  
-Email: *albert.physik@gmail.com*  
+Email: [albert.physik@gmail.com](mailto:albert.physik@gmail.com)  
+WhatsApp: [+51 947 029 347](https://w.app/luisrobles)  
 
 Created for students and researchers who want a **smoother transition into LaTeX**, particularly in the **Spanish-speaking academic community**.
+
+Si te interesa un curso o taller de LaTeX/LaTeXiS, o deseas reportar un bug directamente, puedes escribirme por correo o WhatsApp.
 
 ---
 
 ## 📜 License
 
-MIT License (or your preferred license).
+MIT License
 
 ---
 
