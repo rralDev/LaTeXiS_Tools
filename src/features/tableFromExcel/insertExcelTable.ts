@@ -25,7 +25,9 @@ export async function insertExcelTable(): Promise<void> {
         filters: { "Excel Files": ["xlsx"] }
     });
 
-    if (!fileUris || fileUris.length === 0) return;
+    if (!fileUris || fileUris.length === 0) {
+        return;
+    }
 
     const excelUri = fileUris[0];
 

@@ -24,7 +24,9 @@ export function generateRichLatexTable(table: RichTable): string {
     const colAlign: ("l" | "c" | "r")[] = [];
     for (let col = 0; col < colCount; col++) {
         const aligns = table.map(r => r[col]?.hAlign).filter(Boolean) as ("l" | "c" | "r")[];
-        if (aligns.length === 0) colAlign.push("c");
+        if (aligns.length === 0) {
+            colAlign.push("c");
+        }
         else {
             const f = { l: 0, c: 0, r: 0 };
             aligns.forEach(a => f[a]++);
@@ -110,7 +112,9 @@ export function generateRichLatexTable(table: RichTable): string {
 
         out += "    " + pieces.join(" & ") + " \\\\ \n";
 
-        if (r === 0) out += "    \\midrule\n";
+        if (r === 0) {
+            out += "    \\midrule\n";
+        }
     }
 
     out += "    \\bottomrule\n";
@@ -122,18 +126,31 @@ export function generateRichLatexTable(table: RichTable): string {
 
 /** Format rich cell */
 function formatRichCell(cell: RichCell | undefined): string {
-    if (!cell) return "";
+    if (!cell) 
+    {
+        return "";
+    }
     let text = escapeLatex(cell.text ?? "");
 
-    if (cell.bold) text = `\\textbf{${text}}`;
-    if (cell.italic) text = `\\textit{${text}}`;
-    if (cell.underline) text = `\\underline{${text}}`;
+    if (cell.bold) {
+        text = `\\textbf{${text}}`;
+    }
+    if (cell.italic) {
+        text = `\\textit{${text}}`;
+    }
+    if (cell.underline) {
+        text = `\\underline{${text}}`;
+    }
 
     const fg = excelRgbToXcolor(cell.textColor);
-    if (fg) text = `\\textcolor[RGB]{${fg}}{${text}}`;
+    if (fg) {
+        text = `\\textcolor[RGB]{${fg}}{${text}}`;
+    }
 
     const bg = excelRgbToXcolor(cell.backgroundColor);
-    if (bg) text = `\\cellcolor[RGB]{${bg}} ${text}`;
+    if (bg) {
+        text = `\\cellcolor[RGB]{${bg}} ${text}`;
+    }
 
     return text;
 }
@@ -145,10 +162,19 @@ function escapeLatex(t: string): string {
 
 /** Convert Excel RGB → r,g,b */
 function excelRgbToXcolor(hex?: string): string | null {
-    if (!hex) return null;
+    if (!hex)
+    {
+        return null;
+    }
     let h = hex.replace(/^#/, "").trim();
-    if (h.length === 8) h = h.slice(2);
-    if (h.length !== 6) return null;
+    if (h.length === 8)
+    {
+        h = h.slice(2);
+    }
+    if (h.length !== 6)
+    {
+        return null;
+    }
 
     const r = parseInt(h.slice(0, 2), 16);
     const g = parseInt(h.slice(2, 4), 16);

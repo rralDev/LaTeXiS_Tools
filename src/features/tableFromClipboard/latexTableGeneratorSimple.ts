@@ -21,7 +21,9 @@ export function generateSimpleLatexTable(table: SimpleCell[][]): string {
 
             for (let row = 0; row < table.length; row++) {
                 const cell = table[row][col];
-                if (!cell) continue;
+                if (!cell) {
+                    continue;
+                }
                 const value = (cell.text ?? "").trim();
 
                 // Consider numeric if valid float or int

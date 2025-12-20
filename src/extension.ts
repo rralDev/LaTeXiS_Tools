@@ -102,9 +102,9 @@ async function ensureImageFolder(baseUri?: vscode.Uri): Promise<vscode.Uri | nul
         // Failed to read directory → continue gracefully
     }
 
-    const hasImages = files.some(([name]) =>
-        name.match(/\.(png|jpg|jpeg|pdf|eps)$/i)
-    );
+    const hasImages = files.some(([name]) => {
+        return name.match(/\.(png|jpg|jpeg|pdf|eps)$/i);
+    });
 
     // If folder has no images, copy logo_latexis.png as example
     if (!hasImages) {
@@ -260,7 +260,7 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
         const entries = gpMatch[1].match(/\{([^}]+)\}/g) || [];
         for (const e of entries) {
             const raw = e.slice(1, -1).replace(/\/+$/, "");
-            if (!raw) continue;
+            if (!raw) {continue;}
             imageDirs.push(vscode.Uri.joinPath(mainDir, raw));
         }
     }
@@ -271,8 +271,8 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
     try {
         const entries = await vscode.workspace.fs.readDirectory(scanRoot);
         for (const [name, type] of entries) {
-            if (type !== vscode.FileType.Directory) continue;
-            if (EXCLUDED_DIRS.has(name)) continue;
+            if (type !== vscode.FileType.Directory) {continue;}
+            if (EXCLUDED_DIRS.has(name)) {continue;}
 
             const dirUri = vscode.Uri.joinPath(scanRoot, name);
             try {
@@ -303,7 +303,7 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
     let finalDirs = uniqueDirs;
     if (finalDirs.length === 0) {
         const fallback = await ensureImageFolder(editor.document.uri);
-        if (!fallback) return;
+        if (!fallback) {return;}
         finalDirs = [fallback];
     }
 
@@ -579,7 +579,7 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
                 placeHolder: "Selecciona el tipo de ecuación simple"
             });
 
-            if (!picked) return;
+            if (!picked) {return;}
 
             if (picked === opciones[0]) {
                 snippetEq = new vscode.SnippetString(
@@ -612,7 +612,7 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
                 placeHolder: "Selecciona el entorno alineado"
             });
 
-            if (!picked) return;
+            if (!picked) {return;}
 
             if (picked === opciones[0]) {
                 snippetEq = new vscode.SnippetString(
@@ -647,7 +647,7 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
                 placeHolder: "Selecciona una plantilla"
             });
 
-            if (!picked) return;
+            if (!picked) {return;}
 
             if (picked === opciones[0]) {
                 snippetEq = new vscode.SnippetString(
@@ -697,7 +697,7 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
                 placeHolder: "Selecciona el formato multilínea"
             });
 
-            if (!picked) return;
+            if (!picked) {return;}
 
             if (picked === opciones[0]) {
                 snippetEq = new vscode.SnippetString(
@@ -738,7 +738,7 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
                 placeHolder: "Selecciona un ejemplo de física"
             });
 
-            if (!picked) return;
+            if (!picked) {return;}
 
             if (picked === opciones[0]) {
                 snippetEq = new vscode.SnippetString(
@@ -1205,13 +1205,13 @@ ${afterEnd}`;
         // If we have a workspace, concatenate all .tex files' contents
         if (workspaceFolders && workspaceFolders.length > 0) {
             const texFiles = await vscode.workspace.findFiles('**/*.tex');
-            for (const uri of texFiles) {
-                const doc = await vscode.workspace.openTextDocument(uri);
-                if (doc === activeDocument) {
-                    continue;
-                }
-                allText += '\n' + doc.getText();
+        for (const uri of texFiles) {
+            const doc = await vscode.workspace.openTextDocument(uri);
+            if (doc === activeDocument) {
+                continue;
             }
+            allText += '\n' + doc.getText();
+        }
         }
 
         // New modular detection system
@@ -1225,7 +1225,9 @@ ${afterEnd}`;
             detectTextPackages
         ]) {
             const pkgs = detector(allText);
-            pkgs.forEach(pkg => detected.add(pkg));
+            pkgs.forEach(pkg => {
+                detected.add(pkg);
+            });
         }
 
         // --- Improved package insertion: only report newly added packages ----

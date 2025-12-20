@@ -48,7 +48,9 @@ export function readRichTableFromXlsxBuffer(
         // Marcamos todas las celdas cubiertas por este merge como "a saltar"
         for (let r = s.r; r <= e.r; r++) {
             for (let c = s.c; c <= e.c; c++) {
-                if (r === s.r && c === s.c) continue; // celda principal
+                if (r === s.r && c === s.c) {
+                    continue; // celda principal
+                }
                 skipCells.add(`${r}:${c}`);
             }
         }
@@ -73,7 +75,10 @@ export function readRichTableFromXlsxBuffer(
             const cellObj: any = (sheet as any)[addr];
             // console.log("DEBUG CELL", addr, cellObj); // luego borrar
 
-            const text = cellObj && cellObj.v != null ? String(cellObj.v).trim() : "";
+            const text =
+                cellObj && cellObj.v !== null && cellObj.v !== undefined
+                    ? String(cellObj.v).trim()
+                    : "";
 
             const rich: RichCell = { text };
 
@@ -83,9 +88,15 @@ export function readRichTableFromXlsxBuffer(
             const align = s.alignment || {};
             const fill = s.fill || {};
 
-            if (font.bold) rich.bold = true;
-            if (font.italic) rich.italic = true;
-            if (font.underline) rich.underline = true;
+            if (font.bold) {
+                rich.bold = true;
+            }
+            if (font.italic) {
+                rich.italic = true;
+            }
+            if (font.underline) {
+                rich.underline = true;
+            }
 
             // Alineación horizontal
             if (align.horizontal === "center") {
@@ -100,7 +111,9 @@ export function readRichTableFromXlsxBuffer(
             const fontColor = font.color || {};
             let fgRgb: string | undefined = fontColor.rgb;
             if (fgRgb) {
-                if (fgRgb.length === 8) fgRgb = fgRgb.substring(2); // drop alpha FF
+                if (fgRgb.length === 8) {
+                    fgRgb = fgRgb.substring(2);
+                }
                 rich.textColor = fgRgb;
             }
 
@@ -109,15 +122,21 @@ export function readRichTableFromXlsxBuffer(
                 (fill.fgColor && fill.fgColor.rgb) ||
                 (fill.bgColor && fill.bgColor.rgb);
             if (fillFg) {
-                if (fillFg.length === 8) fillFg = fillFg.substring(2); // drop alpha FF
+                if (fillFg.length === 8) {
+                    fillFg = fillFg.substring(2);
+                }
                 rich.backgroundColor = fillFg;
             }
 
             // Colspan / Rowspan si esta celda es inicio de un merge
             const span = spanMap.get(key);
             if (span) {
-                if (span.colspan > 1) rich.colspan = span.colspan;
-                if (span.rowspan > 1) rich.rowspan = span.rowspan;
+                if (span.colspan > 1) {
+                    rich.colspan = span.colspan;
+                }
+                if (span.rowspan > 1) {
+                    rich.rowspan = span.rowspan;
+                }
             }
 
             row.push(rich);
