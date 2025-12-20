@@ -47,8 +47,16 @@ export async function pasteSimpleTable(): Promise<void> {
     }
 
     const latex = generateSimpleLatexTable(table);
-    const annotated =
-        "% LaTeXiS: Tabla pegada desde portapapeles (simple)\n" + latex + "\n";
 
-    await editor.insertSnippet(new vscode.SnippetString(annotated));
+    const annotated =
+        "% LaTeXiS: Tabla ingresada desde portapapeles\n" +
+        "\\begin{table}[htbp]\n" +
+        "  \\centering\n" +
+        "  \\caption{${1:Descripción de la tabla}}\n" +
+        "  \\label{tab:${2:etiquetaTabla}}\n" +
+        latex.replace(/^/gm, "  ") + "\n" +
+        "\\end{table}\n";
+
+    const snippet = new vscode.SnippetString(annotated);
+    await editor.insertSnippet(snippet);
 }

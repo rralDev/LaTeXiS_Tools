@@ -1,4 +1,7 @@
 .DS_Store
+# VS Code user-specific settings
+.vscode/*
+!.vscode/extensions.json
 out
 dist
 node_modules

@@ -17,49 +17,47 @@
 export function detectReferencePackages(content: string): Set<string> {
     const pkgs = new Set<string>();
 
-    // --- 1) Detect biblatex features ---------------------------------------
-    // If the user employs commands from biblatex, ensure biblatex package.
-    if (
-        content.includes("\\cite{") ||
+    // --- 1) Detect modern biblatex-based workflows -------------------------
+    // biblatex is the modern, flexible backend used for APA, IEEE, Chicago, etc.
+    const usesBiblatexCommands =
         content.includes("\\parencite{") ||
         content.includes("\\textcite{") ||
-        content.includes("\\printbibliography")
-    ) {
-        pkgs.add("biblatex");
-    }
+        content.includes("\\autocite{") ||
+        content.includes("\\printbibliography") ||
+        content.includes("\\addbibresource{");
 
-    // --- 2) Detect old-style LaTeX bibliography ----------------------------
-    // Using \bibliography or thebibliography environment suggests natbib.
-    if (
+    // --- 2) Detect legacy natbib-based workflows ---------------------------
+    // natbib is older and typically used with \\bibliography or numeric styles.
+    const usesNatbibCommands =
         content.includes("\\bibliography{") ||
-        content.includes("\\begin{thebibliography}")
-    ) {
+        content.includes("\\begin{thebibliography}") ||
+        content.includes("\\citep{") ||
+        content.includes("\\citet{");
+
+    // Prefer biblatex when both are detected (modern > legacy)
+    if (usesBiblatexCommands) {
+        pkgs.add("biblatex");
+    } else if (usesNatbibCommands) {
         pkgs.add("natbib");
     }
 
-    // --- 3) Detect reference enhancement commands --------------------------
-    // hyperref provides \autoref{}, colored links, PDF metadata, etc.
+    // --- 3) Detect hyperref (links, URLs, PDF metadata) --------------------
     if (
-        content.includes("\\autoref{") ||
+        content.includes("\\href{") ||
         content.includes("\\url{") ||
-        content.includes("\\href{")
+        content.includes("\\hyperref[") ||
+        content.includes("\\autoref{")
     ) {
         pkgs.add("hyperref");
     }
 
-    // --- 4) Detect cleveref (more advanced cross-references) ---------------
+    // --- 4) Detect cleveref (enhanced cross-references) --------------------
     if (
         content.includes("\\cref{") ||
         content.includes("\\Cref{")
     ) {
         pkgs.add("cleveref");
-        pkgs.add("hyperref"); // cleveref depends strongly on hyperref
-    }
-
-    // --- 5) Detect biblatex data sources -----------------------------------
-    // \addbibresource{file.bib}
-    if (content.includes("\\addbibresource{")) {
-        pkgs.add("biblatex");
+        pkgs.add("hyperref"); // cleveref depends on hyperref
     }
 
     return pkgs;

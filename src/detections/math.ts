@@ -11,23 +11,25 @@
 export function detectMathPackages(content: string): Set<string> {
     const pkgs = new Set<string>();
 
-    // --- 1) Detect align / split / gather (AMS environments) --------------
-    // These require the amsmath package.
+    // --- 1) Detect AMS math environments ----------------------------------
+    // These environments are provided by the amsmath package.
     if (
         content.includes("\\begin{align") ||
+        content.includes("\\begin{align*") ||
+        content.includes("\\begin{equation") ||
+        content.includes("\\begin{equation*") ||
         content.includes("\\begin{split") ||
-        content.includes("\\begin{gather")
+        content.includes("\\begin{gather") ||
+        content.includes("\\begin{multline")
     ) {
         pkgs.add("amsmath");
     }
 
-    // --- 2) Detect use of ams symbols -------------------------------------
-    // Commands like \mathbb{}, \mathfrak{}, \mathcal{} are typically provided
-    // by the amssymb or amsfonts packages.
+    // --- 2) Detect ams symbols (unequivocal) -------------------------------
+    // \mathbb and \mathfrak require amssymb/amsfonts.
     if (
         content.includes("\\mathbb") ||
-        content.includes("\\mathfrak") ||
-        content.includes("\\mathcal")
+        content.includes("\\mathfrak")
     ) {
         pkgs.add("amssymb");
         pkgs.add("amsfonts");
@@ -46,7 +48,22 @@ export function detectMathPackages(content: string): Set<string> {
         pkgs.add("amsmath"); // dependency
     }
 
-    // --- 4) Detect siunitx for physical units ------------------------------
+    // --- 4) Detect physics package ----------------------------------------
+    // Common in physics and engineering papers.
+    // Commands like \qty, \dv, \pdv, \bra, \ket require the physics package.
+    if (
+        content.includes("\\qty") ||
+        content.includes("\\dv") ||
+        content.includes("\\pdv") ||
+        content.includes("\\bra") ||
+        content.includes("\\ket") ||
+        content.includes("\\braket")
+    ) {
+        pkgs.add("physics");
+        pkgs.add("amsmath"); // physics depends on amsmath
+    }
+
+    // --- 5) Detect siunitx for physical units ------------------------------
     // The \SI{}{} and \si{} commands belong to the siunitx package.
     if (
         content.includes("\\SI{") ||
@@ -56,7 +73,7 @@ export function detectMathPackages(content: string): Set<string> {
         pkgs.add("siunitx");
     }
 
-    // --- 5) Detect cases environment --------------------------------------
+    // --- 6) Detect cases environment --------------------------------------
     // \begin{cases} is part of amsmath.
     if (content.includes("\\begin{cases")) {
         pkgs.add("amsmath");

@@ -40,10 +40,22 @@ export function detectTablePackages(content: string): Set<string> {
         pkgs.add("tabularx");
     }
 
+    // --- 4b) Detect tabular* (full-width tables in two-column layouts) -----
+    // tabular* is provided by LaTeX core but usually paired with array.
+    if (content.includes("\\begin{tabular*")) {
+        pkgs.add("array");
+    }
+
     // --- 5) Detectar multirow ------------------------------------------------
     // multirow permite celdas que ocupen varias filas
     if (content.includes("\\multirow")) {
         pkgs.add("multirow");
+    }
+
+    // --- 5b) Detect rotating tables ----------------------------------------
+    // sidewaystable environment requires the rotating package.
+    if (content.includes("\\begin{sidewaystable")) {
+        pkgs.add("rotating");
     }
 
     // --- 6) Detectar multicolumn ---------------------------------------------
@@ -71,6 +83,15 @@ export function detectTablePackages(content: string): Set<string> {
     ) {
         pkgs.add("colortbl");
         pkgs.add("xcolor");
+    }
+
+    // --- 8) Detect threeparttable (table notes) -----------------------------
+    // Common in academic and journal-quality tables.
+    if (
+        content.includes("\\begin{threeparttable") ||
+        content.includes("\\tnote")
+    ) {
+        pkgs.add("threeparttable");
     }
 
     return pkgs;

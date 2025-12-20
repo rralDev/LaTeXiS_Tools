@@ -6,8 +6,8 @@
     "name": "Luis Robles"
   },
   "icon": "images/icon.png",
-  "description": "Advanced LaTeX extension that provides intelligent assistance, automatic package management, multilingual support, and thesis/project templates designed to improve the LaTeX writing workflow.",
-  "version": "0.0.5",
+  "description": "Advanced LaTeX extension for VS Code focused on automating and simplifying academic and scientific document creation. LaTeXiS assists thesis writers and researchers with intelligent tooling such as automated table generation, LaTeX package management, document analysis, and extensible snippets for articles, theses, books, and institutional templates.",
+  "version": "0.0.6",
   "repository": {
     "type": "git",
     "url": "https://github.com/rralDev/latexis.git"
@@ -16,7 +16,40 @@
     "vscode": "^1.106.1"
   },
   "categories": [
-    "Other"
+    "Programming Languages",
+    "Snippets",
+    "Formatters"
+  ],
+  "keywords": [
+    "latex",
+    "LaTeX",
+    "latex-tools",
+    "latex-templates",
+    "latex-tables",
+    "excel-to-latex",
+    "xlsx",
+    "latex-table-generator",
+    "booktabs",
+    "multirow",
+    "tabular",
+    "tabularx",
+    "biblatex",
+    "biber",
+    "apa",
+    "latex-workflow",
+    "academic-writing",
+    "thesis",
+    "theses",
+    "tesis",
+    "research",
+    "scientific-writing",
+    "vscode-latex",
+    "latex-extension",
+    "clipboard",
+    "tsv",
+    "excel",
+    "tables",
+    "automation"
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
@@ -24,7 +57,7 @@
     "commands": [
       {
         "command": "latexis.helloWorld",
-        "title": "Hello World"
+        "title": "LaTeXiS: Hello World (debug)"
       },
       {
         "command": "latexis.insertFigure",
@@ -44,11 +77,15 @@
       },
       {
         "command": "latexis.pasteSimpleTable",
-        "title": "LaTeXiS: Pegar tabla simple"
+        "title": "LaTeXiS: Pegar tabla desde portapapeles"
       },
       {
         "command": "latexis.insertExcelTable",
         "title": "LaTeXiS: Insertar tabla desde archivo Excel"
+      },
+      {
+        "command": "latexis.changeCitationStyle",
+        "title": "LaTeXiS: Cambiar estilo de citación (BibLaTeX)"
       }
     ]
   },
