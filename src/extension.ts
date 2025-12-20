@@ -865,7 +865,7 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
         }
 
         // 6) Insert APA configuration block after \\documentclass
-        const lines = mainText.split("\\n");
+        const lines = mainText.split("\n");
         let insertLine = 0;
 
         for (let i = 0; i < lines.length; i++) {
@@ -893,6 +893,35 @@ let insertFigure = vscode.commands.registerCommand('latexis.insertFigure', async
         const edit = new vscode.WorkspaceEdit();
         edit.insert(mainDocument.uri, new vscode.Position(insertLine, 0), apaBlock);
         await vscode.workspace.applyEdit(edit);
+
+        // === Insert example citation block after \begin{document}, if no \autocite{ exists ===
+        const refreshedTextForCitation = mainDocument.getText();
+        if (!refreshedTextForCitation.includes("\\autocite{")) {
+            const docLines = refreshedTextForCitation.split("\n");
+            let beginDocumentLine = -1;
+            for (let i = 0; i < docLines.length; i++) {
+                if (docLines[i].includes("\\begin{document}")) {
+                    beginDocumentLine = i;
+                    break;
+                }
+            }
+            if (beginDocumentLine !== -1) {
+                const exampleCitationBlock =
+`% ============================
+% Ejemplo de cita (LaTeXiS)
+% Puedes eliminar esta línea luego
+Acá un ejemplo de cómo citar una referencia: \\autocite{Lamport1994}
+% ============================
+`;
+                const citationEdit = new vscode.WorkspaceEdit();
+                citationEdit.insert(
+                    mainDocument.uri,
+                    new vscode.Position(beginDocumentLine + 1, 0),
+                    exampleCitationBlock
+                );
+                await vscode.workspace.applyEdit(citationEdit);
+            }
+        }
 
         // 8) Insert \printbibliography before \end{document} if not already present
         // This step ensures the bibliography appears automatically in the final document output.
@@ -957,9 +986,27 @@ ${afterEnd}`;
                 if (!exists) {
                     const encoder = new TextEncoder();
                     const initialContent =
-`% Archivo de bibliografía creado por LaTeXiS
-% Añade aquí tus entradas BibLaTeX (formato .bib)
+`% ====================================================
+% Archivo de bibliografía creado por LaTeXiS
+% Formato: BibLaTeX (.bib)
+%
+% Referencia de ejemplo (recomendada para principiantes):
+% Lamport, L. (1994). LaTeX: A Document Preparation System.
+% Addison-Wesley.
+% ====================================================
 
+@book{Lamport1994,
+  author    = {Lamport, Leslie},
+  title     = {LaTeX: A Document Preparation System},
+  year      = {1994},
+  edition   = {2},
+  publisher = {Addison-Wesley},
+  address   = {Reading, MA}
+}
+
+% ====================================================
+% Puedes agregar más referencias debajo de esta línea
+% ====================================================
 `;
                     await vscode.workspace.fs.writeFile(bibUri, encoder.encode(initialContent));
                     vscode.window.showInformationMessage(
