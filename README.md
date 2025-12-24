@@ -139,7 +139,26 @@ Merged rows and columns are translated into `\multirow` and `\multicolumn` comma
 **Header inserted**
 ```tex
 % LaTeXiS: Tabla ingresada desde Excel
-% Origen: ruta/relativa/al/archivo.xlsx
+% Ruta: Excel/Ejemplo02.xlsx
+\begin{table}[hbtp]
+    \centering
+    \caption{Descripción de la tabla}
+    \label{tab:excel-table}
+    \begin{tabular}{ccc}
+    \toprule
+    \multicolumn{3}{c}{Titulo de la Tabla} \\ 
+    \midrule
+    ID & Nombre & Genero \\ 
+    \multirow{2}{*}{1} & Jose & M \\ 
+      & Maria & \multirow{4}{*}{F} \\ 
+    2 & Tania &  \\ 
+    3 & Sofia &  \\ 
+    4 & Lourdes &  \\ 
+    \multirow{2}{*}{8} & Pedro & \multirow{2}{*}{M} \\ 
+      & Percy &  \\ 
+    \bottomrule
+    \end{tabular}
+\end{table}
 ```
 
 **Current limitation**

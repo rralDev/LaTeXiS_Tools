@@ -37,7 +37,7 @@ export function generateRichLatexTable(table: RichTable): string {
     let out = "";
     out += "\\begin{table}[hbtp]\n";
     out += "    \\centering\n";
-    out += "    \\caption{${1:Descripción de la tabla}}\n";
+    out += "    \\caption{Descripción de la tabla}\n";
     out += "    \\label{tab:excel-table}\n";
     out += "    \\begin{tabular}{" + colAlign.join("") + "}\n";
     out += "    \\toprule\n";

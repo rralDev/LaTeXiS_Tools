@@ -7,7 +7,7 @@
   },
   "icon": "images/icon.png",
   "description": "Advanced LaTeX extension for VS Code focused on automating and simplifying academic and scientific document creation. LaTeXiS assists thesis writers and researchers with intelligent tooling such as automated table generation, LaTeX package management, document analysis, and extensible snippets for articles, theses, books, and institutional templates.",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "repository": {
     "type": "git",
     "url": "https://github.com/rralDev/latexis.git"

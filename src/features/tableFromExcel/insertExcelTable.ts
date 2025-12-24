@@ -4,6 +4,7 @@ import { RichTable } from "../../models/tableTypes";
 import { generateRichLatexTable } from "./latexTableGeneratorRich";
 import { ensurePackage } from "../../utils/packages";
 import { readXlsxRich } from "./xlsxReader";
+import { findMainTexDocument } from "../../extension";
 
 /**
  * Step 2 of the RICH workflow:
@@ -40,11 +41,11 @@ export async function insertExcelTable(): Promise<void> {
         // console.log("RICH TABLE DEBUG:", JSON.stringify(richTable, null, 2)); \\luego se Borra
 
         // Ensure required LaTeX packages exist
-        const mainDoc = editor.document;
+        const mainDoc = await findMainTexDocument(editor.document);
         await ensurePackage(mainDoc, "booktabs");
-        await ensurePackage(mainDoc, "xcolor");
-        await ensurePackage(mainDoc, "colortbl");
         await ensurePackage(mainDoc, "multirow");
+        await ensurePackage(mainDoc, "colortbl");
+        await ensurePackage(mainDoc, "xcolor");
 
         // Generate LaTeX with format
         const workspaceFolders = vscode.workspace.workspaceFolders;
