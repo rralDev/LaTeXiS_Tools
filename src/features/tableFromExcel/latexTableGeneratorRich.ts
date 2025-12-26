@@ -39,6 +39,7 @@ export function generateRichLatexTable(table: RichTable): string {
     out += "    \\centering\n";
     out += "    \\caption{Descripción de la tabla}\n";
     out += "    \\label{tab:excel-table}\n";
+    out += "    \\begin{adjustbox}{max width=\\textwidth}\n";
     out += "    \\begin{tabular}{" + colAlign.join("") + "}\n";
     out += "    \\toprule\n";
 
@@ -119,6 +120,7 @@ export function generateRichLatexTable(table: RichTable): string {
 
     out += "    \\bottomrule\n";
     out += "    \\end{tabular}\n";
+    out += "    \\end{adjustbox}\n";
     out += "\\end{table}\n";
 
     return out;
@@ -181,4 +183,107 @@ function excelRgbToXcolor(hex?: string): string | null {
     const b = parseInt(h.slice(4, 6), 16);
 
     return `${r},${g},${b}`;
+}
+export function generateRichLongtable(table: RichTable): string {
+    if (!table || table.length === 0) {
+        return "% Empty longtable";
+    }
+
+    const colCount = Math.max(...table.map(r => r.length));
+
+    // Detect column alignment
+    const colAlign: ("l" | "c" | "r")[] = [];
+    for (let c = 0; c < colCount; c++) {
+        const aligns = table
+            .map(r => r[c]?.hAlign)
+            .filter(Boolean) as ("l" | "c" | "r")[];
+
+        if (aligns.length === 0) {
+            colAlign.push("c");
+        } else {
+            const freq = { l: 0, c: 0, r: 0 };
+            aligns.forEach(a => freq[a]++);
+            colAlign.push(
+                Object.entries(freq).sort((a, b) => b[1] - a[1])[0][0] as "l" | "c" | "r"
+            );
+        }
+    }
+
+    let out = "";
+
+    out += "\\begin{longtable}{" + colAlign.join("") + "}\n";
+    out += "\\caption{Descripción de la tabla}\n";
+    out += "\\label{tab:excel-table}\\\\\n\n";
+
+    // -----------------------
+    // HEADER (FIRST PAGE)
+    // -----------------------
+    out += "\\toprule\n";
+    out += renderLongtableRow(table[0], colCount);
+    out += "\\midrule\n";
+    out += "\\endfirsthead\n\n";
+
+    // -----------------------
+    // HEADER (NEXT PAGES)
+    // -----------------------
+    out += "\\toprule\n";
+    out += renderLongtableRow(table[0], colCount);
+    out += "\\midrule\n";
+    out += "\\endhead\n\n";
+
+    // -----------------------
+    // BODY
+    // -----------------------
+    for (let r = 1; r < table.length; r++) {
+        out += renderLongtableRow(table[r], colCount);
+    }
+
+    out += "\\bottomrule\n";
+    out += "\\end{longtable}\n";
+
+    return out;
+}
+
+function renderLongtableRow(
+    row: RichCell[],
+    colCount: number
+): string {
+    const pieces: string[] = [];
+    let skip = 0;
+
+    for (let c = 0; c < colCount; c++) {
+        if (skip > 0) {
+            skip--;
+            pieces.push("");
+            continue;
+        }
+
+        const cell = row[c];
+        if (!cell) {
+            pieces.push("");
+            continue;
+        }
+
+        const colspan = cell.colspan ?? 1;
+        const rowspan = cell.rowspan ?? 1;
+        const content = formatRichCell(cell);
+        const align = cell.hAlign ?? "c";
+
+        let tex = "";
+
+        if (rowspan > 1 && colspan > 1) {
+            tex = `\\multirow{${rowspan}}{*}{\\multicolumn{${colspan}}{${align}}{${content}}}`;
+        } else if (colspan > 1) {
+            tex = `\\multicolumn{${colspan}}{${align}}{${content}}`;
+        } else if (rowspan > 1) {
+            tex = `\\multirow{${rowspan}}{*}{${content}}`;
+        } else {
+            tex = content;
+        }
+
+        pieces.push(tex);
+        skip = colspan - 1;
+    }
+
+    return "    " + pieces.join(" & ") + " \\\\\n";
 }

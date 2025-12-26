@@ -117,6 +117,28 @@ Copy a range from Excel/Sheets (TSV).
 #### 3.2 Rich tables from Excel (`.xlsx`)
 Imports a formatted table from an `.xlsx` file.
 
+**Available layout modes (Excel import)**
+
+- **Normal (ajustar al ancho)**  
+  Generates `table + tabular` wrapped in `adjustbox` (`max width=\textwidth`).  
+  Single‑page table.
+
+- **Tabla larga (continúa en varias páginas)**  
+  Generates a `longtable` environment with:
+  - repeated header on each page  
+  - automatic *“Continúa en la siguiente página”* message  
+  - vertical multipage support
+
+- **Tabla muy ancha (landscape)**  
+  Generates `landscape + table + tabular` wrapped in  
+  `adjustbox{max width=\linewidth}`.  
+  Single‑page, horizontal layout.
+
+- **Larga + landscape**  
+  Generates `landscape + longtable`.  
+  Designed for tables that are **both wide and long**, allowing horizontal
+  orientation **and** automatic page breaks.
+
 **Visual example (Excel → LaTeX with merged cells):**
 
 **Input (Excel – merged cells, structured layout):**
