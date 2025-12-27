@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { ensurePackage } from "../utils/packages";
 import { ensureGraphicspath } from "../utils/graphicsPath";
 import { findMainTexDocument } from "../extension";
+import { insertImageFromClipboard } from "./insertImageFromClipboard";
 
 /* --------------------------------------------------
  * Helpers
@@ -207,7 +208,8 @@ export function registerInsertFigure(context: vscode.ExtensionContext) {
         "↔️ Figura a ancho completo",
         "📰 Imagen con texto alrededor",
         "📐 Figura con caption lateral",
-        "📎 Solo imagen"
+        "📎 Solo imagen",
+        "📋 Pegar imagen desde portapapeles"
       ];
 
       const choice = await vscode.window.showQuickPick(options, {
@@ -216,7 +218,7 @@ export function registerInsertFigure(context: vscode.ExtensionContext) {
 
       if (!choice) {return;}
 
-      let snippet: vscode.SnippetString;
+      let snippet: vscode.SnippetString | null = null;
 
       /* --------------------------------------------------
        * Figura estándar
@@ -316,15 +318,24 @@ export function registerInsertFigure(context: vscode.ExtensionContext) {
       /* --------------------------------------------------
        * Inline
        * -------------------------------------------------- */
-      else {
+      else if (choice === options[5]) {
         snippet = new vscode.SnippetString(
           "\\\\includegraphics[width=0.5\\\\textwidth]{" +
           defaultImageName +
           "}\n"
         );
       }
+      /* --------------------------------------------------
+       * Insert image from clipboard
+       * -------------------------------------------------- */
+      else if (choice === options[6]) {
+        await insertImageFromClipboard();
+        return;
+      }
 
-      editor.insertSnippet(snippet);
+      if (snippet) {
+        editor.insertSnippet(snippet);
+      }
     }
   );
 

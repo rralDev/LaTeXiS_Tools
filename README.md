@@ -54,6 +54,35 @@ LaTeXiS inserts several figure layouts via a menu and makes the project compile�
 - Figura con caption lateral (`SCfigure`)
 - Solo imagen (inline)
 
+#### Insert image from clipboard (Pegar imagen desde portapapeles)
+
+LaTeXiS allows you to paste an image directly from the system clipboard as a LaTeX figure.
+
+**Workflow**
+1. Copy an image (screenshot or image from the web).
+2. Run **LaTeXiS: Insertar figura**.
+3. Choose **Pegar imagen desde portapapeles**.
+4. Optionally provide a base name for the image.
+5. LaTeXiS will:
+   - Save the image into the project image directory (`img/` by default)
+   - Append the suffix `_PP` and avoid overwriting existing files
+   - Insert a ready-to-compile `figure` environment
+   - Reuse the existing `\\graphicspath` (no `img/` prefix needed in `\\includegraphics`)
+
+**Example output**
+```tex
+\\begin{figure}[hbtp]
+  \\centering
+  \\includegraphics[width=0.8\\textwidth]{test_PP_2}
+  \\caption{Descripción de la imagen}
+  \\label{fig:test_PP_2}
+\\end{figure}
+```
+
+**Naming rules**
+- Images are saved as: `<base>_PP.png`, `<base>_PP_2.png`, …
+- If no name is provided, LaTeXiS uses `img_PP.png` as the base.
+
 ---
 
 ### 2) Equations (Insertar ecuación)
@@ -264,11 +293,27 @@ LaTeXiS sets up BibLaTeX in a way that beginners can compile reliably.
 - A working LaTeX distribution (TeX Live / MiKTeX / MacTeX)
 - For BibLaTeX workflows: **biber**
 
+### Clipboard image support (OS-specific)
+
+To enable *Insert image from clipboard*, an additional tool may be required depending on your operating system:
+
+- **macOS**:  
+  Requires `pngpaste`  
+  Install with: `brew install pngpaste`
+
+- **Linux**:  
+  Requires `xclip` (with PNG support)  
+  Example (Debian/Ubuntu): `sudo apt install xclip`
+
+- **Windows**:  
+  No external installation required.  
+  Uses PowerShell and .NET APIs available by default.
+
 ---
 
 ## Known issues / limitations
 - **Excel colors & typography** (bold/italic/underline, foreground/background colors) are not yet exported to LaTeX.
-- **Figure from clipboard** is not yet available (planned).
+- **Figure from clipboard** is available, but depends on OS-level clipboard tools (see Requirements).
 - **Online reference lookup** (auto‑fetch BibTeX from DOI/Crossref/other databases) is not yet available (planned).
 
 ---
