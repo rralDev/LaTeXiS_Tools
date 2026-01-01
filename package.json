@@ -7,7 +7,7 @@
   },
   "icon": "images/icon.png",
   "description": "Advanced LaTeX extension for VS Code focused on automating and simplifying academic and scientific document creation. LaTeXiS assists thesis writers and researchers with intelligent tooling such as automated table generation, LaTeX package management, document analysis, and extensible snippets for articles, theses, books, and institutional templates.",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/rralDev/latexis.git"
@@ -52,44 +52,30 @@
     "automation"
   ],
   "activationEvents": [
+    "onCommand:latexis.manageReferences",
     "onCommand:latexis.insertFigure",
-    "onCommand:latexis.insertExcelTable",
-    "onCommand:latexis.pasteSimpleTable",
+    "onCommand:latexis.manageTables",
     "onCommand:latexis.insertEquation",
-    "onCommand:latexis.scanDocument",
-    "onCommand:latexis.insertAPAConfig",
-    "onCommand:latexis.changeCitationStyle"
+    "onCommand:latexis.scanDocument"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "latexis.helloWorld",
-        "title": "LaTeXiS: Hello World (debug)"
+        "command": "latexis.manageReferences",
+        "title": "LaTeXiS: Gestionar referencias"
       },
       {
         "command": "latexis.insertFigure",
         "title": "LaTeXiS: Insertar figura"
       },
       {
+        "command": "latexis.manageTables",
+        "title": "LaTeXiS: Insertar tabla"
+      },
+      {
         "command": "latexis.insertEquation",
         "title": "LaTeXiS: Insertar ecuación"
-      },
-      {
-        "command": "latexis.pasteSimpleTable",
-        "title": "LaTeXiS: Pegar tabla desde portapapeles"
-      },
-      {
-        "command": "latexis.insertExcelTable",
-        "title": "LaTeXiS: Insertar tabla desde archivo Excel"
-      },
-      {
-        "command": "latexis.insertAPAConfig",
-        "title": "LaTeXiS: Insertar configuración APA (biblatex + biber)"
-      },
-      {
-        "command": "latexis.changeCitationStyle",
-        "title": "LaTeXiS: Cambiar estilo de citación (BibLaTeX)"
       },
       {
         "command": "latexis.scanDocument",

@@ -1,8 +1,21 @@
 import * as vscode from "vscode";
+import * as fs from "fs";
+import * as path from "path";
 import { findMainTexDocument } from "../extension";
 
+/**
+ * Insert APA BibLaTeX configuration into main TeX file.
+ *
+ * RESPONSIBILITY OF THIS COMMAND:
+ * - Ensure BibLaTeX APA package is loaded in the preamble
+ * - Ensure \addbibresource{} entries exist
+ *
+ * NOT RESPONSIBLE FOR:
+ * - Creating bibliography files (handled by initialSetup)
+ * - Inserting \printbibliography (handled by initialSetup)
+ */
 export function registerInsertAPAConfig(context: vscode.ExtensionContext) {
-  const insertAPAConfig = vscode.commands.registerCommand(
+  const cmd = vscode.commands.registerCommand(
     "latexis.insertAPAConfig",
     async () => {
       const editor = vscode.window.activeTextEditor;
@@ -11,126 +24,67 @@ export function registerInsertAPAConfig(context: vscode.ExtensionContext) {
         return;
       }
 
-      const activeDoc = editor.document;
-      const mainDocument = await findMainTexDocument(activeDoc);
-      const mainText = mainDocument.getText();
+      const mainDoc = await findMainTexDocument(editor.document);
+      let text = mainDoc.getText();
 
-      if (!mainText.includes("\\documentclass")) {
-        vscode.window.showWarningMessage(
-          "No se encontró \\documentclass en el archivo principal."
+      // --------------------------------------------------
+      // 1. Ensure BibLaTeX APA package (PREAMBLE ONLY)
+      // --------------------------------------------------
+      if (!/\\usepackage(\[[^\]]*\])?\{biblatex\}/.test(text)) {
+        text = text.replace(
+          /(\\documentclass[^\n]*\n)/,
+          `$1` +
+          `\\usepackage[backend=biber,style=apa]{biblatex}\n` +
+          `\\DeclareLanguageMapping{spanish}{spanish-apa}\n` +
+          `\\usepackage{csquotes}\n\n`
         );
-        return;
       }
 
-      if (mainText.includes("biblatex")) {
-        vscode.window.showInformationMessage(
-          "Este archivo ya contiene una configuración con biblatex."
-        );
-        return;
-      }
+      // --------------------------------------------------
+      // 2. Ensure managed \addbibresource block
+      // --------------------------------------------------
+      if (!text.includes("% Bibliografía (LaTeXiS)")) {
+        const bibBlock =
+`% ============================
+% Bibliografía (LaTeXiS)
+% ============================
+\\addbibresource{bibliography/articulos.bib}
+\\addbibresource{bibliography/libros.bib}
+\\addbibresource{bibliography/tesis.bib}
+\\addbibresource{bibliography/reportes.bib}
+\\addbibresource{bibliography/online.bib}
+\\addbibresource{bibliography/otros.bib}
+% ============================
 
-      const workspaceFolders = vscode.workspace.workspaceFolders;
-      let bibResource = "bibliografia.bib";
-      let shouldCreateBibFile = false;
-
-      if (workspaceFolders && workspaceFolders.length > 0) {
-        const bibFiles = await vscode.workspace.findFiles("**/*.bib");
-        if (bibFiles.length === 1) {
-          bibResource = vscode.workspace.asRelativePath(bibFiles[0], false);
-        } else if (bibFiles.length === 0) {
-          shouldCreateBibFile = true;
-        }
-      } else {
-        shouldCreateBibFile = true;
-      }
-
-      const lines = mainText.split("\n");
-      let insertLine = 0;
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes("\\documentclass")) {
-          insertLine = i + 1;
-          break;
-        }
-      }
-
-      const apaBlock =
-`% ====================================================
-%   Configuración APA (LaTeXiS)
-% ====================================================
-\\usepackage[backend=biber,style=apa]{biblatex}
-\\DeclareLanguageMapping{spanish}{spanish-apa}
-\\usepackage{csquotes}
-
-% Archivo(s) de bibliografía
-\\addbibresource{${bibResource}}
-% ====================================================
 `;
+        text = text.replace(
+          /(\\usepackage[^\n]*\{biblatex\}[^\n]*\n)/,
+          `$1${bibBlock}`
+        );
+      }
 
+      // --------------------------------------------------
+      // 3. Apply edit (FULL DOCUMENT REPLACE)
+      // --------------------------------------------------
       const edit = new vscode.WorkspaceEdit();
-      edit.insert(mainDocument.uri, new vscode.Position(insertLine, 0), apaBlock);
+      edit.replace(
+        mainDoc.uri,
+        new vscode.Range(
+          0,
+          0,
+          mainDoc.lineCount,
+          mainDoc.lineAt(mainDoc.lineCount - 1).text.length
+        ),
+        text
+      );
+
       await vscode.workspace.applyEdit(edit);
 
-      if (!mainText.includes("\\printbibliography")) {
-        const refreshed = mainDocument.getText();
-        const endIndex = refreshed.lastIndexOf("\\end{document}");
-        if (endIndex !== -1) {
-          const beforeEnd = refreshed.substring(0, endIndex);
-          const afterEnd = refreshed.substring(endIndex);
-
-          const newContent =
-`${beforeEnd}
-
-% ============================
-%   Bibliografía (LaTeXiS)
-% ============================
-\\printbibliography
-% ============================
-${afterEnd}`;
-
-          const fullEdit = new vscode.WorkspaceEdit();
-          fullEdit.replace(
-            mainDocument.uri,
-            new vscode.Range(0, 0, mainDocument.lineCount, 0),
-            newContent
-          );
-          await vscode.workspace.applyEdit(fullEdit);
-        }
-      }
-
-      if (shouldCreateBibFile && workspaceFolders && workspaceFolders.length > 0) {
-        const root = workspaceFolders[0].uri;
-        const bibUri = vscode.Uri.joinPath(root, bibResource);
-        try {
-          await vscode.workspace.fs.stat(bibUri);
-        } catch {
-          const encoder = new TextEncoder();
-          const initialContent =
-`% ====================================================
-% Archivo de bibliografía creado por LaTeXiS
-% Referencia de ejemplo recomendada:
-% Lamport, L. (1994). LaTeX: A Document Preparation System.
-% ====================================================
-
-@book{Lamport1994,
-  author    = {Lamport, Leslie},
-  title     = {LaTeX: A Document Preparation System},
-  year      = {1994},
-  edition   = {2},
-  publisher = {Addison-Wesley}
-}
-`;
-          await vscode.workspace.fs.writeFile(
-            bibUri,
-            encoder.encode(initialContent)
-          );
-        }
-      }
-
       vscode.window.showInformationMessage(
-        "Configuración APA insertada correctamente."
+        "LaTeXiS: Configuración APA aplicada (preambulo actualizado)."
       );
     }
   );
 
-  context.subscriptions.push(insertAPAConfig);
+  context.subscriptions.push(cmd);
 }
