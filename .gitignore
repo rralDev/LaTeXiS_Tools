@@ -7,3 +7,8 @@ dist
 node_modules
 .vscode-test/
 *.vsix
+DEVLOG.md
+IDEAS.md
+ROADMAP.md
+ARCHITECTURE.md
+EXECUTION_CHECKLIST.md

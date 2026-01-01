@@ -11,6 +11,7 @@ import { registerScanDocument } from "./commands/scanDocument";
 import { registerInsertAPAConfig } from "./commands/insertAPAConfig";
 import { registerChangeCitationStyle } from "./commands/changeCitationStyle";
 import { registerInitialSetup } from "./commands/initialSetup";
+import { listTodos } from "./commands/listTodos";
 
 import { registerManageReferences } from "./commands/manageReferences";
 
@@ -84,6 +85,14 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "latexis.pasteSimpleTable",
       pasteSimpleTable
+    )
+  );
+
+  // TODOs: generate TODOS.md from embedded % TODO: comments
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "latexis.listTodos",
+      listTodos
     )
   );
 
