@@ -15,9 +15,10 @@
   "engines": {
     "vscode": "^1.106.1"
   },
-  "categories": [    
-    "Productivity",
-    "Snippets"
+  "categories": [        
+    "Programming Languages",    
+    "Snippets",
+    "Formatters"
   ],
   "files": [
   "dist",
