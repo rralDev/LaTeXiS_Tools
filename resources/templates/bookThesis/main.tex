@@ -1,0 +1,44 @@
+% =========================================================
+% Main document file (Book / Thesis)
+% =========================================================
+%
+% This file defines ONLY the structure of the document.
+% All packages, configurations, and metadata are loaded
+% from config/config.tex.
+%
+% Do not add packages here.
+%
+
+\documentclass[12pt]{report}
+
+% Load global configuration
+\input{config/config}
+
+\begin{document}
+
+% =========================================================
+% Front matter
+% =========================================================
+
+\maketitle
+
+% Uncomment if needed
+% \tableofcontents
+% \listoffigures
+% \listoftables
+
+% =========================================================
+% Main content
+% =========================================================
+
+\include{chapters/introduccion}
+\include{chapters/metodologia}
+\include{chapters/conclusiones}
+
+% =========================================================
+% Bibliography
+% =========================================================
+
+\printbibliography
+
+\end{document}

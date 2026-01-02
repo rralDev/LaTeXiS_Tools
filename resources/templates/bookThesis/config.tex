@@ -1,0 +1,73 @@
+% =========================================================
+% Global configuration file
+% =========================================================
+%
+% This file contains:
+% - Package imports
+% - Global document configuration
+% - Bibliography setup
+% - Graphics paths
+% - Metadata
+%
+% This file is intentionally verbose and customizable.
+%
+
+% ---------------------------------------------------------
+% Language and typography
+% ---------------------------------------------------------
+
+\usepackage[spanish]{babel}
+\usepackage{csquotes}
+
+% ---------------------------------------------------------
+% Mathematics
+% ---------------------------------------------------------
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% ---------------------------------------------------------
+% Graphics and figures
+% ---------------------------------------------------------
+
+\usepackage{graphicx}
+
+% Standard figures directory
+\graphicspath{{figures/}}
+
+% ---------------------------------------------------------
+% Tables
+% ---------------------------------------------------------
+
+\usepackage{booktabs}
+\usepackage{multirow}
+
+% ---------------------------------------------------------
+% Bibliography (BibLaTeX + APA)
+% ---------------------------------------------------------
+
+\usepackage[
+  backend=biber,
+  style=apa,
+  sorting=nyt
+]{biblatex}
+
+% Bibliography sources
+\addbibresource{bibliography/libros.bib}
+\addbibresource{bibliography/articulos.bib}
+
+% ---------------------------------------------------------
+% Metadata
+% ---------------------------------------------------------
+
+\title{Título de la tesis}
+\author{Nombre del autor}
+\date{\today}
+
+% ---------------------------------------------------------
+% User custom packages
+% ---------------------------------------------------------
+% Add additional packages below this line if needed.
+%
+% Example:
+% \usepackage{float}

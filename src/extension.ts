@@ -19,6 +19,7 @@ import { registerManageReferences } from "./commands/manageReferences";
 import { registerInsertFromDOI } from "./features/bibliography/commands/insertFromDOI";
 import { registerInsertFromTitle } from "./features/bibliography/commands/insertFromTitle";
 import { registerManageBibliography } from "./features/bibliography/commands/manageBibliography";
+import { createAcademicProject } from "./features/scaffolding/commands/createAcademicProject";
 
 export async function findMainTexDocument(activeDocument: vscode.TextDocument): Promise<vscode.TextDocument> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -102,6 +103,14 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "latexis.toggleDraftMode",
       toggleDraftMode
+    )
+  );
+
+  // Academic project scaffolding
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "latexis.createAcademicProject",
+      createAcademicProject
     )
   );
 

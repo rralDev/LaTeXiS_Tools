@@ -6,8 +6,8 @@
     "name": "Luis Robles"
   },
   "icon": "images/icon.png",
-  "description": "Advanced LaTeX extension for VS Code focused on automating and simplifying academic and scientific document creation. LaTeXiS assists thesis writers and researchers with intelligent tooling such as automated table generation, LaTeX package management, document analysis, and extensible snippets for articles, theses, books, and institutional templates.",
-  "version": "0.1.0",
+  "description": "Advanced LaTeX productivity extension for VS Code focused on real academic workflows. LaTeXiS streamlines thesis and scientific writing through automated project scaffolding, smart bibliography management (BibLaTeX, Biber, DOI-based insertion), fast draft compilation for large documents, embedded TODO tracking, Excel-to-LaTeX table generation, figure automation, and document analysis. Designed for articles, reports, theses, and long-form academic projects.",
+  "version": "0.2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/rralDev/latexis.git"
@@ -18,6 +18,13 @@
   "categories": [    
     "Productivity",
     "Snippets"
+  ],
+  "files": [
+  "dist",
+  "resources",
+  "images",
+  "package.json",
+  "README.md"
   ],
   "keywords": [
     "academic-latex",
@@ -79,7 +86,8 @@
     "onCommand:latexis.insertEquation",
     "onCommand:latexis.scanDocument",
     "onCommand:latexis.listTodos",
-    "onCommand:latexis.toggleDraftMode"
+    "onCommand:latexis.toggleDraftMode",
+    "onCommand:latexis.createAcademicProject"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -111,6 +119,10 @@
       {
         "command": "latexis.toggleDraftMode",
         "title": "LaTeXiS: Alternar modo borrador (compilación rápida)"
+      },
+      {
+        "command": "latexis.createAcademicProject",
+        "title": "LaTeXiS: Crear nuevo proyecto académico"
       }
     ]
   },
