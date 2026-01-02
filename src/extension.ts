@@ -12,6 +12,7 @@ import { registerInsertAPAConfig } from "./commands/insertAPAConfig";
 import { registerChangeCitationStyle } from "./commands/changeCitationStyle";
 import { registerInitialSetup } from "./commands/initialSetup";
 import { listTodos } from "./commands/listTodos";
+import { toggleDraftMode } from "./commands/toggleDraftMode";
 
 import { registerManageReferences } from "./commands/manageReferences";
 
@@ -93,6 +94,14 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "latexis.listTodos",
       listTodos
+    )
+  );
+
+  // Draft mode: toggle fast compilation using includeonly
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "latexis.toggleDraftMode",
+      toggleDraftMode
     )
   );
 

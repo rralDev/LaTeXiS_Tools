@@ -78,7 +78,8 @@
     "onCommand:latexis.manageTables",
     "onCommand:latexis.insertEquation",
     "onCommand:latexis.scanDocument",
-    "onCommand:latexis.listTodos"
+    "onCommand:latexis.listTodos",
+    "onCommand:latexis.toggleDraftMode"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -106,6 +107,10 @@
       {
         "command": "latexis.listTodos",
         "title": "LaTeXiS: Listar TODOs del proyecto"
+      },
+      {
+        "command": "latexis.toggleDraftMode",
+        "title": "LaTeXiS: Alternar modo borrador (compilación rápida)"
       }
     ]
   },
