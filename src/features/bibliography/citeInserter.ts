@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { ensurePackage } from "../../utils/packages";
-import { findMainTexDocument } from "../../extension";
+import { findMainTexDocument, findPackageTargetDocument, ensurePrintBibliography } from "../../utils/latexDocuments";
 
 /**
  * Inserts a citation command at the cursor.
@@ -14,9 +14,10 @@ export async function insertCitation(citeKey: string): Promise<void> {
     }
 
     const mainDoc = await findMainTexDocument(editor.document);
-
+    const targetDoc = await findPackageTargetDocument(mainDoc);
     // Ensure biblatex is loaded
-    await ensurePackage(mainDoc, "biblatex");
+    await ensurePackage(targetDoc, "biblatex");
+    await ensurePrintBibliography(mainDoc);
 
     const citeTypes = [
         { label: "\\autocite", description: "Cita automática (recomendada, sensible al estilo)" },

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { ensurePackage } from '../utils/packages';
-import { findMainTexDocument } from '../extension';
+import { findMainTexDocument, findPackageTargetDocument } from '../utils/latexDocuments';
 import {
   detectFigurePackages,
   detectTablePackages,
@@ -32,6 +32,7 @@ export function registerScanDocument(context: vscode.ExtensionContext) {
     }
 
     const mainDocument = await findMainTexDocument(activeDocument);
+    const targetDocument = await findPackageTargetDocument(mainDocument);
     const mainText = mainDocument.getText();
 
     if (workspaceFolders && !mainText.includes("\\documentclass")) {
@@ -65,13 +66,13 @@ export function registerScanDocument(context: vscode.ExtensionContext) {
       detector(allText).forEach(pkg => detected.add(pkg));
     }
 
-    const mainTextNow = mainDocument.getText();
+    const targetTextNow = targetDocument.getText();
     const newlyAdded: string[] = [];
 
     for (const pkg of detected) {
       const regex = new RegExp(`\\\\usepackage\\\\s*(?:\\\\[[^\\\\]]*\\\\])?\\\\s*\\\\{${pkg}\\\\}`);
-      if (!regex.test(mainTextNow)) {
-        await ensurePackage(mainDocument, pkg);
+      if (!regex.test(targetTextNow)) {
+        await ensurePackage(targetDocument, pkg);
         newlyAdded.push(pkg);
       }
     }
@@ -80,7 +81,7 @@ export function registerScanDocument(context: vscode.ExtensionContext) {
       vscode.window.showInformationMessage("No se añadieron nuevos paquetes. Todo está completo.");
     } else {
       vscode.window.showInformationMessage(
-        "Nuevos paquetes añadidos al archivo principal: " + newlyAdded.join(", ")
+        "Nuevos paquetes añadidos al archivo de configuración: " + newlyAdded.join(", ")
       );
     }
   });

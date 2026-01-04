@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "path";
+import { findInsertionTarget, InsertionTargetKind } from "./latexInsertionTargets";
 
 // ==============================================
 // DIRECTORIES TO IGNORE COMPLETELY (A1 SELECTED)
@@ -107,36 +108,52 @@ export async function ensureGraphicspath(mainDoc: vscode.TextDocument): Promise<
         const graphicspathContent = sorted.map(p => `{${p}}`).join("");
         const correctSyntax = `\\graphicspath{${graphicspathContent}}`;
 
-        const text = mainDoc.getText();
+        // Determine the target document: prefer config.tex (workspace root) if it exists, else mainDoc
+        let doc: vscode.TextDocument = mainDoc;
+        if (workspaceFolders && workspaceFolders.length > 0) {
+            const workspaceRoot = workspaceFolders[0].uri;
+            const configUri = vscode.Uri.joinPath(workspaceRoot, "config.tex");
+            try {
+                doc = await vscode.workspace.openTextDocument(configUri);
+            } catch {
+                // config.tex does not exist, fallback to mainDoc
+            }
+        }
 
-        // Detect any existing graphicspath
-        const regex = /\\graphicspath\s*\{(?:\{[^}]*\})+\}/;
+        const originalLines = doc.getText().split("\n");
+
+        // Remove existing \graphicspath lines (we will re-insert a single correct one)
+        const cleanedLines = originalLines.filter(
+            (line) => !/\\graphicspath\s*\{(?:\{[^}]*\})+\}/.test(line)
+        );
+
+        // Find \usepackage{graphicx} and insert graphicspath immediately after it
+        let insertLine = -1;
+
+        for (let i = 0; i < cleanedLines.length; i++) {
+            if (/^\\usepackage\s*\{graphicx\}/.test(cleanedLines[i])) {
+                insertLine = i + 1;
+                break;
+            }
+        }
+
+        // If graphicx is not found, do nothing (package insertion handles it)
+        if (insertLine === -1) {
+            return;
+        }
+
+        const finalLines = [
+            ...cleanedLines.slice(0, insertLine),
+            correctSyntax,
+            ...cleanedLines.slice(insertLine)
+        ];
 
         const edit = new vscode.WorkspaceEdit();
-
-        if (!regex.test(text)) {
-            // Insert AFTER \usepackage{graphicx}
-            const lines = text.split("\n");
-            let insertLine = 0;
-
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].includes("\\usepackage{graphicx}")) {
-                    insertLine = i + 1;
-                    break;
-                }
-            }
-
-            edit.insert(mainDoc.uri, new vscode.Position(insertLine, 0), correctSyntax + "\n");
-        } else {
-            // Replace the existing graphicspath block
-            const updated = text.replace(regex, correctSyntax);
-
-            edit.replace(
-                mainDoc.uri,
-                new vscode.Range(0, 0, mainDoc.lineCount, 0),
-                updated
-            );
-        }
+        edit.replace(
+            doc.uri,
+            new vscode.Range(0, 0, doc.lineCount, 0),
+            finalLines.join('\n')
+        );
 
         await vscode.workspace.applyEdit(edit);
 

@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { ensurePackage } from "../utils/packages";
-import { findMainTexDocument } from "../extension";
+import { findMainTexDocument, findPackageTargetDocument } from "../utils/latexDocuments";
 
 export function registerInsertEquation(context: vscode.ExtensionContext) {
   const cmd = vscode.commands.registerCommand(
@@ -13,6 +13,8 @@ export function registerInsertEquation(context: vscode.ExtensionContext) {
       }
 
       const mainDoc = await findMainTexDocument(editor.document);
+
+      const targetDocument = await findPackageTargetDocument(mainDoc);
 
       const latexNL = (times: number = 1): string =>
         Array(times).fill("\\\\\\\\").join("\n");
@@ -65,7 +67,7 @@ export function registerInsertEquation(context: vscode.ExtensionContext) {
       // 📐 Alineadas
       // --------------------------------------------------
       else if (categoria === categorias[1]) {
-        await ensurePackage(mainDoc, "amsmath");
+        await ensurePackage(targetDocument, "amsmath");
 
         const opciones = ["align", "align*"];
         const picked = await vscode.window.showQuickPick(opciones);
@@ -92,7 +94,7 @@ export function registerInsertEquation(context: vscode.ExtensionContext) {
       // 🧮 Sistemas / matrices
       // --------------------------------------------------
       else if (categoria === categorias[2]) {
-        await ensurePackage(mainDoc, "amsmath");
+        await ensurePackage(targetDocument, "amsmath");
 
         const opciones = ["Sistema (cases)", "Matriz (pmatrix)"];
         const picked = await vscode.window.showQuickPick(opciones);
@@ -125,7 +127,7 @@ export function registerInsertEquation(context: vscode.ExtensionContext) {
       // 📊 Multilínea
       // --------------------------------------------------
       else if (categoria === categorias[3]) {
-        await ensurePackage(mainDoc, "amsmath");
+        await ensurePackage(targetDocument, "amsmath");
 
         snippet = new vscode.SnippetString(
           "\\begin{multline}\n" +
@@ -140,7 +142,7 @@ export function registerInsertEquation(context: vscode.ExtensionContext) {
       // ⚛️ Física (ejemplos)
       // --------------------------------------------------
       else if (categoria === categorias[4]) {
-        await ensurePackage(mainDoc, "amsmath");
+        await ensurePackage(targetDocument, "amsmath");
 
         const opciones = [
           "Segunda ley de Newton",

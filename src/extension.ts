@@ -21,43 +21,7 @@ import { registerInsertFromTitle } from "./features/bibliography/commands/insert
 import { registerManageBibliography } from "./features/bibliography/commands/manageBibliography";
 import { createAcademicProject } from "./features/scaffolding/commands/createAcademicProject";
 
-export async function findMainTexDocument(activeDocument: vscode.TextDocument): Promise<vscode.TextDocument> {
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-    // 1) Check user setting latexis.mainFile (if provided)
-    const config = vscode.workspace.getConfiguration('latexis');
-    const mainFileSetting = config.get<string>('mainFile');
-
-    if (mainFileSetting && workspaceFolders && workspaceFolders.length > 0) {
-        const root = workspaceFolders[0].uri;
-        const mainUri = vscode.Uri.joinPath(root, mainFileSetting);
-        try {
-            return await vscode.workspace.openTextDocument(mainUri);
-        } catch {
-            // fall through to other strategies
-        }
-    }
-
-    // 2) If the active document contains \documentclass, treat it as the main file
-    const activeText = activeDocument.getText();
-    if (/^\s*\\documentclass(?:\[[^\]]*\])?\{[^}]+\}/m.test(activeText)) {
-        return activeDocument;
-    }
-
-    // 3) Search workspace for a .tex file containing \documentclass
-    if (workspaceFolders && workspaceFolders.length > 0) {
-        const texFiles = await vscode.workspace.findFiles('**/*.tex');
-        for (const uri of texFiles) {
-            const doc = await vscode.workspace.openTextDocument(uri);
-            const text = doc.getText();
-            if (/^\s*\\documentclass(?:\[[^\]]*\])?\{[^}]+\}/m.test(text)) {
-                return doc;
-            }
-        }
-    }
-
-    // Fallback: return the active document
-    return activeDocument;
-}
+import { findMainTexDocument } from "./utils/latexDocuments";
 
 // LaTeXiS Extension Activation — Registers commands and initializes extension behavior
 export function activate(context: vscode.ExtensionContext) {

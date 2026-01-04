@@ -1,7 +1,5 @@
 import * as vscode from "vscode";
-import * as fs from "fs";
-import * as path from "path";
-import { findMainTexDocument } from "../extension";
+import { findMainTexDocument, findPackageTargetDocument } from "../utils/latexDocuments";
 
 /**
  * Insert APA BibLaTeX configuration into main TeX file.
@@ -25,7 +23,8 @@ export function registerInsertAPAConfig(context: vscode.ExtensionContext) {
       }
 
       const mainDoc = await findMainTexDocument(editor.document);
-      let text = mainDoc.getText();
+      const targetDocument = await findPackageTargetDocument(mainDoc);
+      let text = targetDocument.getText();
 
       // --------------------------------------------------
       // 1. Ensure BibLaTeX APA package (PREAMBLE ONLY)
@@ -68,12 +67,12 @@ export function registerInsertAPAConfig(context: vscode.ExtensionContext) {
       // --------------------------------------------------
       const edit = new vscode.WorkspaceEdit();
       edit.replace(
-        mainDoc.uri,
+        targetDocument.uri,
         new vscode.Range(
           0,
           0,
-          mainDoc.lineCount,
-          mainDoc.lineAt(mainDoc.lineCount - 1).text.length
+          targetDocument.lineCount,
+          targetDocument.lineAt(targetDocument.lineCount - 1).text.length
         ),
         text
       );

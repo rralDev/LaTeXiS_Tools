@@ -2,7 +2,7 @@ type Cell = any; // TEMPORARY: allows compilation until RichCell interface is de
 import * as vscode from "vscode";
 import { parseTsvTable } from "./tsvParser";
 import { generateSimpleLatexTable } from "./latexTableGeneratorSimple";
-import { findMainTexDocument } from "../../extension";
+import { findMainTexDocument, findPackageTargetDocument } from "../../utils/latexDocuments";
 import { ensurePackage } from "../../utils/packages";
 
 /**
@@ -18,14 +18,10 @@ export async function pasteSimpleTable(): Promise<void> {
     // === Insert booktabs in main.tex if available ===
     try {
         const activeDoc = editor.document;
-        const mainDoc = await findMainTexDocument(activeDoc);
+        const mainDocument = await findMainTexDocument(activeDoc);
+        const targetDocument = await findPackageTargetDocument(mainDocument);
 
-        // Si el archivo principal tiene \documentclass,
-        // se fuerza la inclusión del paquete booktabs.
-        const mainText = mainDoc.getText();
-        if (/\\documentclass/.test(mainText)) {
-            await ensurePackage(mainDoc, "booktabs");
-        }
+        await ensurePackage(targetDocument, "booktabs");
     } catch (err) {
         console.warn("LaTeXiS: No se pudo garantizar booktabs:", err);
     }

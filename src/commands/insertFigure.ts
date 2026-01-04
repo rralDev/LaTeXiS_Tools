@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { ensurePackage } from "../utils/packages";
 import { ensureGraphicspath } from "../utils/graphicsPath";
-import { findMainTexDocument } from "../extension";
+import { findMainTexDocument, findPackageTargetDocument } from "../utils/latexDocuments";
 import { insertImageFromClipboard } from "./insertImageFromClipboard";
 
 /* --------------------------------------------------
@@ -147,7 +147,9 @@ export function registerInsertFigure(context: vscode.ExtensionContext) {
       }
 
       const mainDoc = await findMainTexDocument(editor.document);
-      await ensurePackage(mainDoc, "graphicx");
+      const targetDocument = await findPackageTargetDocument(mainDoc);
+
+      await ensurePackage(targetDocument, "graphicx");
 
       let imageDir: vscode.Uri | null = null;
 
@@ -186,7 +188,7 @@ export function registerInsertFigure(context: vscode.ExtensionContext) {
         }
       }
 
-      await ensureGraphicspath(mainDoc);
+      await ensureGraphicspath(targetDocument);
 
       // Pick default image from the directories that are actually in \graphicspath
       const mainDir = mainDoc.uri.with({
@@ -224,7 +226,7 @@ export function registerInsertFigure(context: vscode.ExtensionContext) {
        * Figura estándar
        * -------------------------------------------------- */
       if (choice === options[0]) {
-        await ensurePackage(mainDoc, "float");
+        await ensurePackage(targetDocument, "float");
 
         snippet = new vscode.SnippetString(
           "\\begin{figure}[H]\n" +
@@ -240,8 +242,8 @@ export function registerInsertFigure(context: vscode.ExtensionContext) {
        * Subfiguras
        * -------------------------------------------------- */
       else if (choice === options[1]) {
-        await ensurePackage(mainDoc, "subcaption");
-        await ensurePackage(mainDoc, "float");
+        await ensurePackage(targetDocument, "subcaption");
+        await ensurePackage(targetDocument, "float");
 
         snippet = new vscode.SnippetString(
           "\\begin{figure}[H]\n" +
@@ -280,7 +282,7 @@ export function registerInsertFigure(context: vscode.ExtensionContext) {
        * Wrapfigure
        * -------------------------------------------------- */
       else if (choice === options[3]) {
-        await ensurePackage(mainDoc, "wrapfig");
+        await ensurePackage(targetDocument, "wrapfig");
 
         const side = await vscode.window.showQuickPick(
           ["Texto a la derecha", "Texto a la izquierda"],
@@ -303,7 +305,7 @@ export function registerInsertFigure(context: vscode.ExtensionContext) {
        * SCfigure
        * -------------------------------------------------- */
       else if (choice === options[4]) {
-        await ensurePackage(mainDoc, "sidecap");
+        await ensurePackage(targetDocument, "sidecap");
 
         snippet = new vscode.SnippetString(
           "\\begin{SCfigure}[0.5][htbp]\n" +

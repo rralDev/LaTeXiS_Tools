@@ -1,25 +1,60 @@
 import * as vscode from 'vscode';
+import {
+  InsertionTargetKind,
+  findInsertionTarget
+} from './latexInsertionTargets';
 
-export async function ensurePackage(document: vscode.TextDocument, packageName: string) {
-    const text = document.getText();
+/**
+ * Ensures that a LaTeX package is declared exactly once
+ * in the appropriate insertion target (usually config.tex).
+ */
+export async function ensurePackage(
+  mainDocument: vscode.TextDocument,
+  packageName: string,
+  options?: string
+): Promise<void> {
+  const pkgLine = options
+    ? `\\usepackage[${options}]{${packageName}}`
+    : `\\usepackage{${packageName}}`;
 
-    // Check if package already exists (allowing for options in brackets)
-    const regex = new RegExp(`\\\\usepackage\\s*(?:\\[[^\\]]*\\])?\\s*\\{${packageName}\\}`);
-    if (regex.test(text)) {
-        return;
+  const target = await findInsertionTarget(
+    InsertionTargetKind.PACKAGES,
+    mainDocument
+  );
+
+  const text = target.document.getText();
+
+  // Do not insert if already present
+  const pkgRegex = new RegExp(
+    `\\\\usepackage(\\[[^\\]]*\\])?\\{${packageName}\\}`
+  );
+  if (pkgRegex.test(text)) {
+    return;
+  }
+
+  // Insert AFTER the packages section marker, accumulating packages downward
+  let insertLine = target.line + 2;
+
+  for (let i = insertLine; i < target.document.lineCount; i++) {
+    const line = target.document.lineAt(i).text;
+
+    // Stop if another section begins
+    if (/%\s*=+/.test(line)) {
+      break;
     }
 
-    const lines = text.split('\n');
-    let insertLine = 0;
-
-    for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes('\\documentclass')) {
-            insertLine = i + 1;
-            break;
-        }
+    // Append after existing packages
+    if (/^\\usepackage/.test(line)) {
+      insertLine = i + 1;
     }
+  }
 
-    const edit = new vscode.WorkspaceEdit();
-    edit.insert(document.uri, new vscode.Position(insertLine, 0), `\\usepackage{${packageName}}\n`);
-    await vscode.workspace.applyEdit(edit);
+  const edit = new vscode.WorkspaceEdit();
+  edit.insert(
+    target.document.uri,
+    new vscode.Position(insertLine, 0),
+    pkgLine + '\n'
+  );
+
+  await vscode.workspace.applyEdit(edit);
 }

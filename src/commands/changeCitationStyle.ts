@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { findMainTexDocument } from "../extension";
+import { findMainTexDocument, findPackageTargetDocument } from "../utils/latexDocuments";
 
 export function registerChangeCitationStyle(context: vscode.ExtensionContext): void {
     const command = vscode.commands.registerCommand(
@@ -13,14 +13,8 @@ export function registerChangeCitationStyle(context: vscode.ExtensionContext): v
             }
 
             const mainDocument = await findMainTexDocument(editor.document);
-            const mainText = mainDocument.getText();
-
-            if (!mainText.includes("\\documentclass")) {
-                vscode.window.showWarningMessage(
-                    "No se encontró \\documentclass en el archivo principal."
-                );
-                return;
-            }
+            const targetDocument = await findPackageTargetDocument(mainDocument);
+            const targetText = targetDocument.getText();
 
             const styleOptions: { label: string; value: string }[] = [
                 { label: "APA (autor–año)", value: "apa" },
@@ -50,10 +44,10 @@ export function registerChangeCitationStyle(context: vscode.ExtensionContext): v
             const biblatexWithOptsRegex = /\\usepackage\s*\[([^\]]*)\]\s*\{biblatex\}/;
             const biblatexNoOptsRegex = /\\usepackage\s*\\{biblatex\\}/;
 
-            let newText = mainText;
+            let newText = targetText;
 
-            if (biblatexWithOptsRegex.test(mainText)) {
-                newText = mainText.replace(
+            if (biblatexWithOptsRegex.test(targetText)) {
+                newText = targetText.replace(
                     biblatexWithOptsRegex,
                     (_match, options: string) => {
                         const parts = options
@@ -80,20 +74,20 @@ export function registerChangeCitationStyle(context: vscode.ExtensionContext): v
                         return rebuilt;
                     }
                 );
-            } else if (biblatexNoOptsRegex.test(mainText)) {
-                newText = mainText.replace(
+            } else if (biblatexNoOptsRegex.test(targetText)) {
+                newText = targetText.replace(
                     biblatexNoOptsRegex,
                     `\\usepackage[backend=biber,style=${style}]{biblatex}`
                 );
             } else {
-                const lines = mainText.split("\n");
+                const lines = targetText.split("\n");
                 let insertLine = 0;
 
-                for (let i = 0; i < lines.length; i++) {
-                    if (lines[i].includes("\\documentclass")) {
-                        insertLine = i + 1;
-                        break;
-                    }
+                const markerIndex = lines.findIndex(line => /packages\s+section/i.test(line));
+                if (markerIndex !== -1) {
+                    insertLine = markerIndex + 2;
+                } else {
+                    insertLine = 0;
                 }
 
                 const biblatexBlock =
@@ -110,8 +104,8 @@ export function registerChangeCitationStyle(context: vscode.ExtensionContext): v
 
             const edit = new vscode.WorkspaceEdit();
             edit.replace(
-                mainDocument.uri,
-                new vscode.Range(0, 0, mainDocument.lineCount, 0),
+                targetDocument.uri,
+                new vscode.Range(0, 0, targetDocument.lineCount, 0),
                 newText
             );
 
