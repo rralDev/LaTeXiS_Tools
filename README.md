@@ -14,8 +14,8 @@ Core principles:
 - Automation over configuration.
 - Safe operations (idempotent, no silent overwrites).
 - Clear feedback to the user (warnings > hard errors).
+- Centralized preamble management (all packages are maintained in config.tex).
 
-Version **v0.2** focuses on **immediate productivity gains**, not experimental features.
 ---
 
 ## Quick start (3 steps)
@@ -26,11 +26,27 @@ Version **v0.2** focuses on **immediate productivity gains**, not experimental f
 
 ---
 
+## Package management model
+
+LaTeXiS enforces a **single-source-of-truth preamble model**.
+
+- All LaTeX packages (`\usepackage{...}`) are automatically inserted into **config.tex**.
+- `main.tex` remains minimal and structural (documentclass, inputs, document flow).
+- This avoids duplicated packages, keeps large projects readable, and simplifies maintenance.
+
+If `config.tex` does not exist, LaTeXiS falls back to inserting packages into `main.tex`.
+
+---
+
 ## Main commands
 
 ### Gestionar referencias
 
 Insert and manage references easily by DOI or Title. LaTeXiS fetches metadata and updates your bibliography automatically.
+
+Bibliography setup is split intentionally:
+- Packages and bibliography resources are configured in `config.tex`.
+- `\printbibliography` is inserted into `main.tex` before `\end{document}` when needed.
 
 **Insert reference by DOI example:**
 ```
@@ -86,6 +102,11 @@ Import formatted tables from `.xlsx` files, preserving merges and alignment.
 \end{table}
 ```
 
+**What LaTeXiS handles automatically:**
+- Clean LaTeX table formatting
+- Preservation of merged cells and alignment
+- Required packages are added to config.tex automatically (never to main.tex).
+
 #### Desde portapapeles
 
 Paste tab-separated data copied from Excel or Sheets directly as a clean LaTeX table.
@@ -136,6 +157,7 @@ Insert figures with automatic package management and image path setup. Supports 
 - Image path management
 - Required package detection
 - Figure folder creation if missing
+- Required packages are added to config.tex automatically (never to main.tex).
 
 **User result:**
 - Zero manual LaTeX boilerplate
@@ -159,6 +181,7 @@ Insert common math environments with correct formatting and line breaks.
 - Correct math environments
 - Consistent formatting
 - Faster writing of mathematical content
+- Required packages are added to config.tex automatically (never to main.tex).
 
 
 ## Embedded TODO management
