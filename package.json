@@ -7,7 +7,7 @@
   },
   "icon": "images/icon.png",
   "description": "Advanced LaTeX productivity extension for VS Code focused on real academic workflows. LaTeXiS streamlines thesis and scientific writing through automated project scaffolding, smart bibliography management (BibLaTeX, Biber, DOI-based insertion), fast draft compilation for large documents, embedded TODO tracking, Excel-to-LaTeX table generation, figure automation, and document analysis. Designed for articles, reports, theses, and long-form academic projects.",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/rralDev/latexis.git"
