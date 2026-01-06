@@ -166,11 +166,12 @@ export function registerInsertFigure(context: vscode.ExtensionContext) {
       // 1️⃣ Try any existing image directory (recursive, safe)
       imageDir = await findAnyImageDirectory(root);
 
-      // 2️⃣ If none exists, create img/ and seed with logo
+      // 2️⃣ If none exists, create figures/ (standard LaTeXiS behavior)
       if (!imageDir) {
-        imageDir = vscode.Uri.joinPath(root, "img");
+        imageDir = vscode.Uri.joinPath(root, "figures");
         await vscode.workspace.fs.createDirectory(imageDir);
 
+        // Optional: seed with logo only if folder was just created
         try {
           const extension = vscode.extensions.getExtension("LuisRobles.latexis");
           if (extension) {
@@ -180,8 +181,14 @@ export function registerInsertFigure(context: vscode.ExtensionContext) {
               "logo_latexis.png"
             );
             const dest = vscode.Uri.joinPath(imageDir, "logo_latexis.png");
-            const data = await vscode.workspace.fs.readFile(source);
-            await vscode.workspace.fs.writeFile(dest, data);
+
+            // Only copy if logo does not already exist
+            try {
+              await vscode.workspace.fs.stat(dest);
+            } catch {
+              const data = await vscode.workspace.fs.readFile(source);
+              await vscode.workspace.fs.writeFile(dest, data);
+            }
           }
         } catch {
           // ignore

@@ -11,7 +11,7 @@ export type ImageSaveResult = {
 function sanitizeBaseName(name: string): string {
     const trimmed = (name || "").trim();
     const safe = trimmed.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_\-]/g, "");
-    return safe.length ? safe : "img";
+    return safe.length ? safe : "figure";
 }
 
 function ensureForwardSlashes(p: string): string {
@@ -29,12 +29,24 @@ async function pathExists(p: string): Promise<boolean> {
 
 export async function ensureImagesDir(): Promise<string> {
     const folders = vscode.workspace.workspaceFolders;
-    if (!folders || folders.length === 0) throw new Error("No workspace folder open.");
+    if (!folders || folders.length === 0) {
+        throw new Error("No workspace folder open.");
+    }
 
     const root = folders[0].uri.fsPath;
-    const imgDir = path.join(root, "img");
-    await fs.promises.mkdir(imgDir, { recursive: true });
-    return imgDir;
+    const candidates = ["figures", "images", "imgs"];
+
+    for (const name of candidates) {
+        const candidatePath = path.join(root, name);
+        if (await pathExists(candidatePath)) {
+            return candidatePath;
+        }
+    }
+
+    // Default standard directory
+    const figuresDir = path.join(root, "figures");
+    await fs.promises.mkdir(figuresDir, { recursive: true });
+    return figuresDir;
 }
 
 export async function getUniqueClipboardImageName(baseNameInput?: string): Promise<string> {
@@ -42,8 +54,8 @@ export async function getUniqueClipboardImageName(baseNameInput?: string): Promi
 
     const base = sanitizeBaseName(baseNameInput || "");
     const baseWithPP =
-        base === "img" && !baseNameInput?.trim()
-            ? "img_PP"
+        base === "figure" && !baseNameInput?.trim()
+            ? "figure_PP"
             : `${base}_PP`;
 
     let candidate = `${baseWithPP}.png`;
@@ -60,6 +72,7 @@ export async function savePngToImagesDir(pngBytes: Buffer, fileName: string): Pr
     const absPath = path.join(imgDir, fileName);
     await fs.promises.writeFile(absPath, pngBytes);
 
-    const relPathForLatex = ensureForwardSlashes(path.posix.join("img", fileName));
+    const dirName = path.basename(imgDir);
+    const relPathForLatex = ensureForwardSlashes(path.posix.join(dirName, fileName));
     return { absPath, relPathForLatex, fileName };
 }
