@@ -20,21 +20,23 @@ export interface TodoItem {
    */
   filePath: string;
 
-/**
+  /**
    * Line number (1-based) where the TODO appears.
    */
   lineNumber: number;
 
-/**
+  /**
    * Text of the TODO (without the "% TODO:" prefix).
    */
   text: string;
 
-/**
-   * Name of the nearest chapter, section or subsection.
-   *Optional, can be resolved in later stages.
+  /**
+   * Nearest LaTeX structural context (if available)
    */
+  chapter?: string;
   section?: string;
+  subsection?: string;
+  subsubsection?: string;
 }
 
 /**

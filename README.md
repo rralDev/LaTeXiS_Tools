@@ -186,7 +186,8 @@ Insert common math environments with correct formatting and line breaks.
 
 ## Embedded TODO management
 
-LaTeXiS supports structured TODO tracking **directly inside LaTeX source files**.
+LaTeXiS allows you to manage **TODOs directly inside LaTeX source files**, without external tools or additional workflows.  
+TODOs are treated as a natural part of the academic writing process and are fully integrated with the real document structure.
 
 ### TODO syntax
 
@@ -194,38 +195,80 @@ LaTeXiS supports structured TODO tracking **directly inside LaTeX source files**
 % TODO: Review experimental results
 ```
 
-### Command
+- TODOs are detected exclusively inside LaTeX comments.
+- They never interfere with compilation.
+- Safe for large, multi-file projects.
+
+---
+
+### Primary view: TODOs in the Sidebar (Tree View)
+
+LaTeXiS provides a **persistent sidebar view** that organizes TODOs in a hierarchical and navigable structure:
 
 ```
-LaTeXiS: Listar TODOs
+File
+ └─ Chapter
+     └─ Section / Subsection
+         └─ TODO
 ```
 
-### What happens
+**Features:**
+- Grouping by `.tex` file
+- Structured by `\chapter`, `\section`, `\subsection`, `\subsubsection`
+- Automatic counters per file and section
+- Real ordering based on document appearance
+- Click a TODO → opens the file and positions the cursor
+- Auto-refresh: the view updates automatically on save
 
-- All `.tex` files in the workspace are scanned.
-- Each TODO is associated with:
-  - file name
-  - section or chapter
-- A `TODOS.md` file is generated from scratch.
+**Command:**
+```
+LaTeXiS: TODOs (Sidebar)
+```
 
-### Example output (`TODOS.md`)
+**User outcome:**
+- Clear overview of pending work
+- Immediate navigation between tasks
+- Ideal for theses, books, and long academic reports
 
+---
+
+### Markdown report generation (optional)
+
+In addition to the interactive view, LaTeXiS can generate a static report.
+
+**Command:**
+```
+LaTeXiS: TODOs (Markdown list)
+```
+
+**What it does:**
+- Scans all `.tex` files in the project
+- Fully regenerates `TODOS.md`
+- Groups TODOs by file and section
+
+**Example (`TODOS.md`):**
 ```md
-## Pending TODOs
+## chapters/introduction.tex
 
-- [ ] Review experimental results  
-  File: chapters/results.tex  
-  Section: Results
+- Line 29: Clearly define the research problem.
+- Line 38: List the general and specific objectives of the thesis.
 
-- [ ] Rewrite introduction paragraph  
-  File: chapters/introduction.tex  
+## chapters/methodology.tex
+
+- Line 17: Review experimental setup.
 ```
 
-**User result:**
-- Centralized task overview
-- No external task manager required
-- Perfect for long theses and reports
+---
 
+### Philosophy
+
+- No external dependencies
+- No proprietary formats
+- TODOs live where knowledge is written
+- Designed for real academic writing workflows
+
+**Final result:**  
+A lightweight, structural, and fully integrated task system for LaTeX projects.
 
 ## Draft mode / fast compilation
 
@@ -329,15 +372,3 @@ Developed by **Luis Robles**
 Email: [albert.physik@gmail.com](mailto:albert.physik@gmail.com)  
 
 Licensed under MIT License.
-
-
-## Current version
-
-**LaTeXiS v0.2**
-
-Focus:
-- Immediate productivity
-- Large document workflows
-- Academic writing support
-
-Future versions will expand into writing analytics, progress tracking, and publication workflows.

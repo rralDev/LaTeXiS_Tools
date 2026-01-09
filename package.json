@@ -7,7 +7,7 @@
   },
   "icon": "images/icon.png",
   "description": "Advanced LaTeX productivity extension for VS Code focused on real academic workflows. LaTeXiS streamlines thesis and scientific writing through automated project scaffolding, smart bibliography management (BibLaTeX, Biber, DOI-based insertion), fast draft compilation for large documents, embedded TODO tracking, Excel-to-LaTeX table generation, figure automation, and document analysis. Designed for articles, reports, theses, and long-form academic projects.",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/rralDev/latexis.git"
@@ -21,11 +21,11 @@
     "Formatters"
   ],
   "files": [
-  "dist",
-  "resources",
-  "images",
-  "package.json",
-  "README.md"
+    "dist",
+    "resources",
+    "images",
+    "package.json",
+    "README.md"
   ],
   "keywords": [
     "academic-latex",
@@ -115,7 +115,7 @@
       },
       {
         "command": "latexis.listTodos",
-        "title": "LaTeXiS: Listar TODOs del proyecto"
+        "title": "LaTeXiS: TODOs (lista en Markdown)"
       },
       {
         "command": "latexis.toggleDraftMode",
@@ -125,7 +125,40 @@
         "command": "latexis.createAcademicProject",
         "title": "LaTeXiS: Crear nuevo proyecto académico"
       }
-    ]
+    ],
+    "submenus": [
+      {
+        "id": "latexis.todosMenu",
+        "label": "LaTeXiS: Gestionar TODOs"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "latexis.listTodos",
+          "submenu": "latexis.todosMenu"
+        }
+      ],
+      "view/title": [
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "latexisViews",
+          "title": "LaTeXiS",
+          "icon": "images/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "latexisViews": [
+        {
+          "id": "latexisTodosView",
+          "name": "TODOs"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

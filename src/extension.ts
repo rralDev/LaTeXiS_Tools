@@ -23,6 +23,9 @@ import { createAcademicProject } from "./features/scaffolding/commands/createAca
 
 import { findMainTexDocument } from "./utils/latexDocuments";
 
+import { TodoTreeProvider } from "./features/todos/tree/todoTreeProvider";
+import { registerTodoTreeCommand } from "./features/todos/tree/todoTreeCommand";
+
 // LaTeXiS Extension Activation — Registers commands and initializes extension behavior
 export function activate(context: vscode.ExtensionContext) {
   // 1) Command modules
@@ -61,6 +64,27 @@ export function activate(context: vscode.ExtensionContext) {
       listTodos
     )
   );
+
+
+  // -------------------------------
+  // TODOs: Sidebar Tree View
+  // Provides a persistent, clickable TODO explorer
+  // (file → section → TODO)
+  // -------------------------------
+  // TODOs: Tree View (Sidebar)
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  if (workspaceFolders && workspaceFolders.length > 0) {
+    const rootPath = workspaceFolders[0].uri.fsPath;
+
+    const todoTreeProvider = new TodoTreeProvider(rootPath);
+    const todoTreeDisposable = vscode.window.registerTreeDataProvider(
+      "latexisTodosView",
+      todoTreeProvider
+    );
+
+    context.subscriptions.push(todoTreeDisposable);
+    registerTodoTreeCommand(context, todoTreeProvider);
+  }
 
   // Draft mode: toggle fast compilation using includeonly
   context.subscriptions.push(

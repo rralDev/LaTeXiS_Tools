@@ -4,7 +4,7 @@ import {
   TodoItem,
   TodoScanOptions,
   DEFAULT_TODO_PATTERN
-} from './todoModel';
+} from '../todos/todoModel';
 
 /**
  * Recursively scans a directory and returns all files
@@ -69,14 +69,51 @@ export async function scanTodos(
     const content = fs.readFileSync(filePath, 'utf8');
     const lines = content.split(/\r?\n/);
 
+    let currentHierarchy: {
+      chapter?: string;
+      section?: string;
+      subsection?: string;
+      subsubsection?: string;
+    } = {};
+
     lines.forEach((line, index) => {
+      const chapterMatch = line.match(/\\chapter\{(.+?)\}/);
+      if (chapterMatch) {
+        currentHierarchy.chapter = chapterMatch[1].trim();
+        currentHierarchy.section = undefined;
+        currentHierarchy.subsection = undefined;
+        currentHierarchy.subsubsection = undefined;
+      }
+
+      const sectionMatch = line.match(/\\section\{(.+?)\}/);
+      if (sectionMatch) {
+        currentHierarchy.section = sectionMatch[1].trim();
+        currentHierarchy.subsection = undefined;
+        currentHierarchy.subsubsection = undefined;
+      }
+
+      const subsectionMatch = line.match(/\\subsection\{(.+?)\}/);
+      if (subsectionMatch) {
+        currentHierarchy.subsection = subsectionMatch[1].trim();
+        currentHierarchy.subsubsection = undefined;
+      }
+
+      const subsubsectionMatch = line.match(/\\subsubsection\{(.+?)\}/);
+      if (subsubsectionMatch) {
+        currentHierarchy.subsubsection = subsubsectionMatch[1].trim();
+      }
+
       for (const pattern of patterns) {
         const match = line.match(pattern);
         if (match && match[1]) {
           todoItems.push({
             filePath,
             lineNumber: index + 1,
-            text: match[1].trim()
+            text: match[1].trim(),
+            chapter: currentHierarchy.chapter,
+            section: currentHierarchy.section,
+            subsection: currentHierarchy.subsection,
+            subsubsection: currentHierarchy.subsubsection
           });
           break;
         }

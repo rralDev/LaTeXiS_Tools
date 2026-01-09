@@ -166,11 +166,6 @@ async function askDocumentType(): Promise<DocumentType | undefined> {
         value: DocumentType.BOOK_THESIS
       },
       {
-        label: 'Reporte',
-        description: 'Documento técnico o institucional',
-        value: DocumentType.REPORT
-      },
-      {
         label: 'Artículo',
         description: 'Artículo académico o paper',
         value: DocumentType.ARTICLE
