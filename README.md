@@ -294,6 +294,77 @@ LaTeXiS: Alternar modo borrador (compilación rápida)
 - Faster feedback loop while writing
 - Ideal for daily thesis work
 
+---
+
+## Writing metrics (experimental)
+
+LaTeXiS includes an **experimental writing metrics engine** designed for long academic LaTeX documents.  
+Its goal is to provide **real‑time, lightweight, and language‑agnostic feedback** on the structure of academic writing.
+
+The metrics are calculated only on the effective document content (between `\begin{document}` and `\end{document}`), including all files brought in via `\input{}` and `\include{}`.
+
+### Metrics currently supported
+
+#### 1. Word count
+
+A *word* is defined as:
+
+- A contiguous sequence of Unicode letters or digits.
+- Numbers with decimal separators (`3.1415`, `125,153.14`) are treated as **a single word**.
+- LaTeX commands, comments, math environments, and references are excluded.
+- Punctuation marks do not create new words.
+
+This approach avoids over‑counting in scientific texts that contain formulas, constants, or numeric values.
+
+---
+
+#### 2. Paragraph count
+
+A *paragraph* is defined as:
+
+- A block of non‑empty text separated by one or more blank lines.
+- Paragraphs must contain at least one valid word.
+- Structural commands such as `\chapter`, `\section`, etc. do **not** count as paragraphs by themselves.
+
+This definition matches the way paragraphs are understood in academic writing rather than visual formatting.
+
+---
+
+#### 3. Sentence count
+
+Sentence detection is the most complex metric and uses a **heuristic, entropy‑inspired segmentation algorithm**.
+
+A sentence boundary is detected based on **contextual information**, not on fixed dictionaries or hard‑coded abbreviations.
+
+The algorithm considers:
+
+- Terminal punctuation (`.`, `?`, `!`) as *candidates*, not guarantees.
+- The number of spaces or line breaks after punctuation.
+- The length and structure of the token before the punctuation.
+- The type of character following the punctuation (uppercase letter, lowercase letter, LaTeX command).
+- Local predictability of the surrounding characters (inspired by Shannon entropy).
+
+This allows LaTeXiS to correctly handle:
+
+- Abbreviations such as `Dr.`, `Dra.`, `etc.` without relying on language‑specific lists.
+- Decimal numbers (`3.1415`, `125,153.14`) without splitting sentences.
+- Scientific writing patterns common in LaTeX documents.
+- Sentences followed by LaTeX commands (e.g. citations).
+
+The design goal is **robustness and scalability** across languages, rather than perfect linguistic parsing.
+
+---
+
+### Design principles
+
+- No external NLP libraries.
+- No large language models.
+- No language‑specific dictionaries.
+- Linear‑time processing suitable for real‑time updates in VS Code.
+
+These metrics are intended to support **self‑review and structural awareness**, not to replace formal linguistic analysis tools.
+
+Future versions may expose additional metrics and configuration options.
 
 ## Academic project scaffolding
 

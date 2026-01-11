@@ -55,8 +55,6 @@ export function readRichTableFromXlsxBuffer(
             }
         }
     }
-    console.log("[LaTeXiS][merge] spanMap =", spanMap);
-    console.log("[LaTeXiS][merge] skipCells =", skipCells);
 
     const table: RichTable = [];
 
@@ -72,8 +70,7 @@ export function readRichTableFromXlsxBuffer(
             }
 
             const addr = XLSX.utils.encode_cell({ r: R, c: C });
-            const cellObj: any = (sheet as any)[addr];
-            // console.log("DEBUG CELL", addr, cellObj); // luego borrar
+            const cellObj: any = (sheet as any)[addr];            
 
             const text =
                 cellObj && cellObj.v !== null && cellObj.v !== undefined

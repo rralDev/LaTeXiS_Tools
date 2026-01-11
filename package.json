@@ -7,7 +7,7 @@
   },
   "icon": "images/icon.png",
   "description": "Advanced LaTeX productivity extension for VS Code focused on real academic workflows. LaTeXiS streamlines thesis and scientific writing through automated project scaffolding, smart bibliography management (BibLaTeX, Biber, DOI-based insertion), fast draft compilation for large documents, embedded TODO tracking, Excel-to-LaTeX table generation, figure automation, and document analysis. Designed for articles, reports, theses, and long-form academic projects.",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/rralDev/latexis.git"
@@ -88,7 +88,8 @@
     "onCommand:latexis.scanDocument",
     "onCommand:latexis.listTodos",
     "onCommand:latexis.toggleDraftMode",
-    "onCommand:latexis.createAcademicProject"
+    "onCommand:latexis.createAcademicProject",
+    "onView:latexisMetricsView"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -119,7 +120,7 @@
       },
       {
         "command": "latexis.toggleDraftMode",
-        "title": "LaTeXiS: Alternar modo borrador (compilación rápida)"
+        "title": "LaTeXiS: Compilación rápida (documento actual)"
       },
       {
         "command": "latexis.createAcademicProject",
@@ -156,6 +157,10 @@
         {
           "id": "latexisTodosView",
           "name": "TODOs"
+        },
+        {
+          "id": "latexisMetricsView",
+          "name": "Métricas"
         }
       ]
     }

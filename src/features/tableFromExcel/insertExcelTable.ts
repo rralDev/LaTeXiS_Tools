@@ -37,8 +37,7 @@ export async function insertExcelTable(): Promise<void> {
         const data = await vscode.workspace.fs.readFile(excelUri);
 
         // Parse FULL rich table (formato, colores, merges, etc.)
-        const richTable: RichTable = readXlsxRich(data);
-        // console.log("RICH TABLE DEBUG:", JSON.stringify(richTable, null, 2)); \\luego se Borra
+        const richTable: RichTable = readXlsxRich(data);        
 
         const layoutOptions = [
             "Normal (ajustar al ancho)",

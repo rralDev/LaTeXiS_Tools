@@ -26,6 +26,12 @@ import { findMainTexDocument } from "./utils/latexDocuments";
 import { TodoTreeProvider } from "./features/todos/tree/todoTreeProvider";
 import { registerTodoTreeCommand } from "./features/todos/tree/todoTreeCommand";
 
+import { MetricScanner } from "./features/metrics/scanner/metricScanner";
+import { TrackerStorage } from "./features/metrics/tracker/trackerStorage";
+import { MetricTreeProvider } from "./features/metrics/tree/metricTreeProvider";
+import { showMetricsCommand } from "./features/metrics/commands/showMetrics";
+import { resetMetricsCommand } from "./features/metrics/commands/resetMetrics";
+
 // LaTeXiS Extension Activation — Registers commands and initializes extension behavior
 export function activate(context: vscode.ExtensionContext) {
   // 1) Command modules
@@ -85,6 +91,28 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(todoTreeDisposable);
     registerTodoTreeCommand(context, todoTreeProvider);
   }
+
+  // -------------------------------
+  // Writing Metrics: Tracker + Tree View
+  // -------------------------------
+  const metricsStorage = new TrackerStorage(context.workspaceState);
+
+  const metricTreeProvider = new MetricTreeProvider(metricsStorage);
+  const metricTreeDisposable = vscode.window.registerTreeDataProvider(
+    "latexisMetricsView",
+    metricTreeProvider
+  );
+  context.subscriptions.push(metricTreeDisposable);
+
+  const metricScanner = new MetricScanner(
+    context,
+    metricsStorage
+  );
+
+  metricScanner.initialize();
+
+  context.subscriptions.push(showMetricsCommand(context));
+  context.subscriptions.push(resetMetricsCommand(context));
 
   // Draft mode: toggle fast compilation using includeonly
   context.subscriptions.push(

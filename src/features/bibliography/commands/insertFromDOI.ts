@@ -32,9 +32,6 @@ export function registerInsertFromDOI(context: vscode.ExtensionContext) {
       try {
         const metadata = await resolveDOI(doi);
 
-        console.log("LaTeXiS DOI raw input:", doi);
-        console.log("LaTeXiS DOI resolved metadata:", metadata);
-
         // Construct BibLaTeXEntry-compatible object
         const entryType = "article";
 
@@ -86,9 +83,6 @@ export function registerInsertFromDOI(context: vscode.ExtensionContext) {
         };
 
         const bibText = formatBibLaTeXEntry(entry);
-
-        console.log("LaTeXiS BibLaTeX entry object:", entry);
-        console.log("LaTeXiS BibLaTeX formatted text:\n", bibText);
 
         await writeBibEntry(entryType, bibText, citationKey);
 
